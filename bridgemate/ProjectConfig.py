@@ -1,5 +1,6 @@
 import os
 import json
+from utils.config import *
 from utils.Tools import get_project_folder, get_project_file_path
 
 class ProjectConfig(object):
@@ -10,18 +11,21 @@ class ProjectConfig(object):
         if os.path.exists(self.config_path):
             self.load()
         else:
-            self.init()
+            self.setup('TM', 0, "CustomScheduler", 0, 1, 0, 1, 1, 'A')
         
-    def init(self):
-        # config content
-        self.tm_name = 'TM'
-        self.team_count = 2
-        self.scheduler_type = "CustomScheduler"
-        self.total_round = 1
-        self.current_round = 1
+
+    def setup(self, tm_name, team_count, scheduler_type, total_round, current_round, board_count, start_board_number, section_id, section_letter):
+        self.tm_name = tm_name
+        self.team_count = team_count
+        self.scheduler_type = scheduler_type
+        self.total_round = total_round
+        self.current_round = current_round
+        self.section_id = section_id
+        self.section_letter = section_letter
+        self.board_count = board_count
+        self.start_board_number = start_board_number
 
         self.write()
-
         
     def write(self):
         json_content = json.dumps(self.__dict__, indent=4)

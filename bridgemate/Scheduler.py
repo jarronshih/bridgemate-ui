@@ -7,18 +7,18 @@ class BaseScheduler(object):
         raise NotImplementedError
 
     def get_match_by_round(self, current_round):
-        # return (tableid, ns_team, ew_team)
+        # return (tableid, ns_team, ew_team) array
         raise NotImplementedError
 
-    def get_seat_by_round_table(self, round_number, table_id):
-        # retrun (ns_team, ew_team)
-        raise NotImplementedError
+    # def get_seat_by_round_table(self, round_number, table_id):
+    #     # retrun (ns_team, ew_team)
+    #     raise NotImplementedError
 
 class CustomScheduler(BaseScheduler):
     def __init__(self):
         self.match = [
             None,
-            [ (1, 1, 2), (2, 2, 1) ]  # Round 1
+            [ (1, 1, 2), (2, 2, 1) ]  # Round 1 (table_id, ns_team, ew_team)
         ]
 
     def schedule_round(self, round_number):
@@ -27,9 +27,11 @@ class CustomScheduler(BaseScheduler):
     def get_match_by_round(self, round_number):
         return self.match[round_number]
 
-    def get_seat_by_round_table(self, round_number, table_id):
-        return self.match[round_number][table_id-1]
+    # def get_seat_by_round_table(self, round_number, table_id):
+    #     return (self.match[round_number][table_id-1][1], self.match[round_number][table_id-1][2]) 
 
+
+# TODO:
 # class RoundRobinScheduler(BaseScheduler):
 #     def __init__(self, team_count):
 #         super(RoundRobinSchedule, self).__init__(team_count)

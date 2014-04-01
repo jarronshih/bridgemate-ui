@@ -23,7 +23,15 @@ if __name__ == '__main__':
     else:
         print help()
 
-    #start_project('test').run()
-    create_project('test').run()
-    # open_project('test')
+        # Test Code
+        #start_project('test').run()
+        project = create_project('test')
+        project.setup_config(   tm_name='TM', 
+                                team_count=2, 
+                                scheduler_type="CustomScheduler", 
+                                total_round=1, 
+                                board_count=2
+                                )
+        project.run()
+        # open_project('test')
 

@@ -3,6 +3,7 @@ import time
 
 from utils.Logger import get_logger, init_logger
 from utils.Tools import get_project_folder, get_project_file_path
+from utils.config import *
 from bridgemate.Scheduler import *
 from bridgemate.BWS import BWS
 from bridgemate.BCSManager import BCSManager
@@ -23,15 +24,18 @@ class BM2Manager(object):
         self.scheduler = scheduler_class()
 
     def run(self):
-        logger.info("Start run")
-        self.run_one_round()
+        logger.info("Start full run")
+        for r in xrange(self.config.current_round, self.config.total_round+1):
+            self.run_one_round()
+
+    def setup_config(self, tm_name, team_count, scheduler_type, total_round, board_count, start_board_number=1, current_round=1, section_id=DEFAULT_SECTION_ID, section_letter=DEFAULT_SECTION_LETTER):
+        self.config.setup(tm_name, team_count, scheduler_type, total_round, current_round, board_count, start_board_number, section_id, section_letter)
 
     def run_one_round(self):
-        for r in xrange(self.config.current_round, self.config.total_round+1):
-            logger.info("== %d Round == " % r)
-            self.init_bws_file()
-            self.sync_with_bcs()
-            self.save_config()
+        logger.info("== %d Round == " % self.config.current_round)
+        self.init_bws_file()
+        self.sync_with_bcs()
+        self.save_config()
 
     def init_bws_file(self):
         logger.info("Init .bws file")
@@ -39,8 +43,10 @@ class BM2Manager(object):
         bws_path = get_project_file_path(self.project_name, str(current_round) + '.bws')
         bws = BWS(bws_path)
         bws.fill_section(current_round=current_round,
-                        board_start=1,
-                        board_end=8,
+                        board_start=self.config.start_board_number,
+                        board_end=self.config.start_board_number+self.config.board_count - 1,
+                        section_id=self.config.section_id,
+                        section_letter=self.config.section_letter,
                         matches=self.scheduler.get_match_by_round(current_round))
 
     def sync_with_bcs(self):
@@ -56,10 +62,15 @@ class BM2Manager(object):
             bws = BWS(bws_path)
             data_ary = bws.get_recevied_date()
 
+            # TODO: data process
             logger.info("Get Data")
             for data in data_ary:
-
                 logger.info("Data: %s" % str(data))
+
+            # collect all data
+            if data_ary and len(data_ary) >= self.config.team_count * self.config.board_count:
+                break
+
             time.sleep(5)
         
         bcs.close()
@@ -67,6 +78,8 @@ class BM2Manager(object):
 
     def save_config(self):
         logger.info("Write config back to json format")
+        self.config.start_board_number = self.config.start_board_number + self.config.board_count
+        self.config.current_round = self.config.current_round + 1
         self.config.write()
 
 

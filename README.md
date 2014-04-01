@@ -19,3 +19,11 @@ How to use ?
 ============
 python main.py [create/open] <PROJECT_NAME>
 
+
+TODO
+====
+- bridgemate2manager.py, data process 
+- scheduler.py, expand different kind of scheduler
+- WebUI ?
+- QR code -> copy ?
+- error handle of BCS, if can't open ?

@@ -24,7 +24,7 @@ class MDB97(object):
     def execute(self, sql):
         self.db.Execute(sql)
 
-    def open_recordset(self, sql):
+    def get_recordset(self, sql):
         return self.db.OpenRecordset(sql)
 
     def close(self):
@@ -57,13 +57,13 @@ class BWS(object):
         mdb = MDB97()
         mdb.load(self.file_path)
 
-        rs = mdb.open_recordset( ClientsTable().get_select_sql() )
+        rs = mdb.get_recordset( ClientsTable().get_select_sql() )
         res = ClientsTable().get_first_from_recordset(rs, [(CLIENTS_COMPUTER, computer_name)])
         if not res:
             fields = [ (CLIENTS_COMPUTER, '"%s"' % computer_name) ]
             sql = ClientsTable().get_insert_sql(fields)
             mdb.execute(sql)
-            rs = mdb.open_recordset( ClientsTable().get_select_sql() )
+            rs = mdb.get_recordset( ClientsTable().get_select_sql() )
             res = ClientsTable().get_first_from_recordset(rs, [(CLIENTS_COMPUTER, computer_name)])
 
         mdb.close()
@@ -71,7 +71,7 @@ class BWS(object):
         return res[CLIENTS_ID]
 
 
-    def fill_section(self, current_round, board_start, board_end, matches):
+    def fill_section(self, current_round, board_start, board_end, section_id, section_letter, matches):
         team_count =  len(matches)
 
         mdb = MDB97()
@@ -79,8 +79,8 @@ class BWS(object):
 
         # Section fill
         fields = [ 
-            (SECTION_ID, '1'),
-            (SECTION_LETTER, '"A"'),
+            (SECTION_ID, str(section_id)),
+            (SECTION_LETTER, '"%s"' % section_letter),
             (SECTION_TABLES, str(team_count)),
             (SECTION_MISSINGPAIR, '0')
         ]
@@ -90,7 +90,7 @@ class BWS(object):
         # Table fill
         for table, ns_team, ew_team in matches:
             fields = [
-                (TABLES_SECTION, '1'),
+                (TABLES_SECTION, str(section_id)),
                 (TABLES_TABLE, str(table)),
                 (TABLES_COMPUTERID, str(self.computer_id)),
             ]
@@ -100,7 +100,7 @@ class BWS(object):
         # RoundData fill
         for table, ns_team, ew_team in matches:
             fields = [
-                (ROUNDDATA_SECTION, '1'),
+                (ROUNDDATA_SECTION, str(section_id)),
                 (ROUNDDATA_TABLE, str(table)),
                 (ROUNDDATA_ROUND, str(current_round)),
                 (ROUNDDATA_NSPAIR, str(ns_team)),
@@ -119,6 +119,6 @@ class BWS(object):
         mdb = MDB97()
         mdb.load(self.file_path)
         sql = ReceivedDataTable().get_select_sql()
-        rs = mdb.open_recordset(sql)
+        rs = mdb.get_recordset(sql)
 
         return ReceivedDataTable().get_array_from_recordset(rs)
