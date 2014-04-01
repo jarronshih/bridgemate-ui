@@ -1,0 +1,467 @@
+' This example describes how your scoring program can create a Bridgemate database.
+' Language: Microsoft Visual Basic 6.0
+' Last update: March 5th, 2008
+
+'To create the database, add DAO 3.51 support to your VB application and
+'call the routine CreateScoreDatabase. Afterwards, you fill in the correct data in the tables
+'Section, Tables, RoundData and PlayerNumbers.
+
+Option Explicit
+
+Public dbScores As Database
+
+Public Const SCORES_TBL_CLIENTS = "Clients"
+    Public Const SCORES_CLI_ID = "ID"
+    Public Const SCORES_CLI_COMPUTER = "Computer"
+    
+Public Const SCORES_TBL_SECTION = "Section"
+    Public Const SCORES_SEC_ID = "ID"
+    Public Const SCORES_SEC_LETTER = "Letter"
+    Public Const SCORES_SEC_TABLES = "Tables"
+    Public Const SCORES_SEC_MISSINGPAIR = "MissingPair"
+
+Public Const SCORES_TBL_TABLES = "Tables"
+    Public Const SCORES_TAB_SECTION = "Section"
+    Public Const SCORES_TAB_TABLE = "Table"
+    Public Const SCORES_TAB_COMPUTERID = "ComputerID"
+    Public Const SCORES_TAB_STATUS = "Status"
+    Public Const SCORES_TAB_LOGONOFF = "LogOnOff"
+    Public Const SCORES_TAF_CURRENTROUND = "CurrentRound"
+    Public Const SCORES_TAF_CURRENTBOARD = "CurrentBoard"
+    Public Const SCORES_TAF_UPDATEFROMROUND = "UpdateFromRound"
+    
+Public Const SCORES_TBL_ROUNDS = "RoundData"
+    Public Const SCORES_ROU_SECTION = "Section"
+    Public Const SCORES_ROU_TABLE = "Table"
+    Public Const SCORES_ROU_ROUND = "Round"
+    Public Const SCORES_ROU_NSPAIR = "NSPair"
+    Public Const SCORES_ROU_EWPAIR = "EWPair"
+    Public Const SCORES_ROU_LOWBOARD = "LowBoard"
+    Public Const SCORES_ROU_HIGHBOARD = "HighBoard"
+    Public Const SCORES_RON_CUSTOMBOARDS = "CustomBoards"
+    
+Public Const SCORES_TBL_DATA = "ReceivedData"
+Public Const SCORES_TBL_INTERMEDIATEDATA = "IntermediateData"
+    Public Const SCORES_DAT_ID = "ID"
+    Public Const SCORES_DAT_SECTION = "Section"
+    Public Const SCORES_DAT_TABLE = "Table"
+    Public Const SCORES_DAT_ROUND = "Round"
+    Public Const SCORES_DAT_BOARD = "Board"
+    Public Const SCORES_DAT_PAIRNS = "PairNS"
+    Public Const SCORES_DAT_PAIREW = "PairEW"
+    Public Const SCORES_DAT_DECLARER = "Declarer"
+    Public Const SCORES_DAT_DIRECTION = "NS/EW"
+    Public Const SCORES_DAT_CONTRACT = "Contract"
+    Public Const SCORES_DAT_RESULT = "Result"
+    Public Const SCORES_DAT_LEADCARD = "LeadCard"
+    Public Const SCORES_DAT_REMARKS = "Remarks"
+    Public Const SCORES_DAT_DATE = "DateLog"
+    Public Const SCORES_DAT_TIME = "TimeLog"
+    Public Const SCORES_DAT_PROCESSED = "Processed"
+    Public Const SCORES_DAT_ERASED = "Erased"
+    
+Public Const SCORES_TBL_BIDDINGDATA = "BiddingData"
+    Public Const SCORES_BID_ID = "ID"
+    Public Const SCORES_BID_SECTION = "Section"
+    Public Const SCORES_BID_TABLE = "Table"
+    Public Const SCORES_BID_ROUND = "Round"
+    Public Const SCORES_BID_BOARD = "Board"
+    Public Const SCORES_BID_COUNTER = "Counter"
+    Public Const SCORES_BID_DIRECTION = "Direction"
+    Public Const SCORES_BID_BID = "Bid"
+    Public Const SCORES_BID_DATE = "DateLog"
+    Public Const SCORES_BID_TIME = "TimeLog"
+    Public Const SCORES_BID_ERASED = "Erased"
+
+Public Const SCORES_TBL_PLAYDATA = "PlayData"
+    Public Const SCORES_PLA_ID = "ID"
+    Public Const SCORES_PLA_SECTION = "Section"
+    Public Const SCORES_PLA_TABLE = "Table"
+    Public Const SCORES_PLA_ROUND = "Round"
+    Public Const SCORES_PLA_BOARD = "Board"
+    Public Const SCORES_PLA_COUNTER = "Counter"
+    Public Const SCORES_PLA_DIRECTION = "Direction"
+    Public Const SCORES_PLA_CARD = "Card"
+    Public Const SCORES_PLA_DATE = "DateLog"
+    Public Const SCORES_PLA_TIME = "TimeLog"
+    Public Const SCORES_PLA_ERASED = "Erased"
+    
+Public Const SCORES_TBL_PLAYERCODES = "PlayerNumbers"
+    Public Const SCORES_NUM_SECTION = "Section"
+    Public Const SCORES_NUM_TABLE = "Table"
+    Public Const SCORES_NUM_DIRECTION = "Direction"
+    Public Const SCORES_NUM_NUMBER = "Number"
+
+Public Const SCORES_TBL_SETTINGS = "Settings"
+    Public Const SCORES_SET_SHOWRESULTS = "ShowResults"
+    Public Const SCORES_SET_SHOWOWNRESULT = "ShowOwnResult"
+    Public Const SCORES_SET_REPEATRESULTS = "RepeatResults"
+    Public Const SCORES_SET_MAXIMUMRESULTS = "MaximumResults"
+    Public Const SCORES_SET_SHOWPERCENTAGE = "ShowPercentage"
+    Public Const SCORES_SET_GROUPSECTIONS = "GroupSections"
+    Public Const SCORES_SET_SCOREPOINTS = "ScorePoints"
+    Public Const SCORES_SET_ENTERRESULTSMETHOD = "EnterResultsMethod"
+    Public Const SCORES_SET_SHOWPAIRNUMBERS = "ShowPairNumbers"
+    Public Const SCORES_SET_INTERMEDIATERESULTS = "IntermediateResults"
+    Public Const SCORES_SET_AUTOPOWEROFFTIME = "AutopoweroffTime"
+    Public Const SCORES_SET_VERIFICATIONTIME = "VerificationTime"
+    Public Const SCORES_SET_SHOWCONTRACT = "ShowContract"
+    Public Const SCORES_SET_LEADCARD = "LeadCard"
+    Public Const SCORES_SET_MEMBERNUMBERS = "MemberNumbers"
+    Public Const SCORES_SET_MEMBERNUMBERSNOBLANKENTRY = "MemberNumbersNoBlankEntry"
+    Public Const SCORES_SET_BOARDORDERVERIFICATION = "BoardOrderVerification"
+    Public Const SCORES_SET_HANDRECORDVALIDATION = "HandRecordValidation"
+    Public Const SCORES_SET_AUTOSHUTDOWNBPC="AutoShutDownBPC"
+    
+Public Const SCORES_PROPERTY_MOVEMENT = "MovementProperty"
+Public Const SCORES_PROPERTY_DBVERSION = "DBVersionProperty"
+Public Const SCORES_PROPERTY_CREATEDBY = "CreatedByProgramProperty"
+
+
+'API call for retrieving computer name.
+
+Declare Function apiGetComputerName Lib "kernel32.dll" Alias "GetComputerNameA" (ByVal lpBuffer As String, nSize As Long) As Long
+
+Public Sub AddFieldToTable(tblName As TableDef, strFieldName As String, booAllowZeroLength As Boolean, _
+                            intFieldType As Integer, Optional lngAttributes As Long, _
+                            Optional intMaxLength As Integer, Optional varStandardValue As Variant)
+    
+    'Add a new field to an existing table. Table must have been opened before
+    'as a Tabledef object.
+    
+    
+    Dim tmpNewField As Field
+    
+        
+    'Create field with the given parameters.
+    
+    Set tmpNewField = tblName.CreateField(strFieldName, intFieldType, intMaxLength)
+    
+        'AllowZeroLenght only when it is a textfield or memo field.
+        
+        If intFieldType = dbText Or intFieldType = dbMemo Then
+            tmpNewField.AllowZeroLength = booAllowZeroLength
+        End If
+        
+        
+        'Set attributes.
+        
+        tmpNewField.Attributes = lngAttributes
+        
+        
+        'Default value.
+        
+        If Not IsMissing(varStandardValue) Then
+            tmpNewField.DefaultValue = varStandardValue
+        End If
+        
+        
+    'Add field to the table.
+    
+    tblName.Fields.Append tmpNewField
+    
+End Sub
+
+Public Function NoRecordSelected(recRecordSet As Recordset) As Boolean
+    
+    'Check if there is a record selected. If not, BOF or EOF is false.
+    
+    If recRecordSet.BOF = True Or recRecordSet.EOF = True Or recRecordSet.AbsolutePosition = -1 Then
+        NoRecordSelected = True
+    Else
+        NoRecordSelected = False
+    End If
+
+End Function
+
+Public Function EditOneField(recRecordSet As Recordset, strField As String, varValue As Variant) As Boolean
+
+    'Update one field within the current record.
+    
+    On Error GoTo ErrorHandler
+
+    recRecordSet.Edit
+    recRecordSet.Fields(strField) = varValue
+    recRecordSet.Update
+
+    EditOneField = True
+    
+ErrorHandler:
+End Function
+
+Public Sub CreateScoreDatabase(strFileName As String)
+
+    'Create the Bridgemate database with the filename strFIleName.
+    'By calling this subroutine the database will be created automatically.
+    
+    'NOTE: the database is only to be created here. It does not fill the database with the correct
+    'records.
+    
+    
+    Dim tblNew As TableDef
+    Dim i As Integer
+    
+    
+    Set dbScores = CreateDatabase(strFileName, dbLangGeneral, dbVersion30)
+    
+    
+    'Add the tables to the database.
+    
+    
+    'table Clients. Used to store the name of the clients computers.
+
+    Set tblNew = dbScores.CreateTableDef(SCORES_TBL_CLIENTS)
+        Call AddFieldToTable(tblNew, SCORES_CLI_ID, False, dbLong, dbAutoIncrField)
+        Call AddFieldToTable(tblNew, SCORES_CLI_COMPUTER, False, dbText, , 255, "")
+    dbScores.TableDefs.Append tblNew
+    
+    
+    'table Sections. Contains the sections within your session.
+    
+    Set tblNew = dbScores.CreateTableDef(SCORES_TBL_SECTION)
+        Call AddFieldToTable(tblNew, SCORES_SEC_ID, False, dbInteger)
+        Call AddFieldToTable(tblNew, SCORES_SEC_LETTER, False, dbText, , 2)
+        Call AddFieldToTable(tblNew, SCORES_SEC_TABLES, False, dbInteger)
+        Call AddFieldToTable(tblNew, SCORES_SEC_MISSINGPAIR, False, dbInteger, , , 0)
+    dbScores.TableDefs.Append tblNew
+    
+    
+    'table Tables. Contains all the tables for all sections.
+    
+    Set tblNew = dbScores.CreateTableDef(SCORES_TBL_TABLES)
+        Call AddFieldToTable(tblNew, SCORES_TAB_SECTION, False, dbInteger)
+        Call AddFieldToTable(tblNew, SCORES_TAB_TABLE, False, dbInteger)
+        Call AddFieldToTable(tblNew, SCORES_TAB_COMPUTERID, False, dbInteger, , , 0)
+        Call AddFieldToTable(tblNew, SCORES_TAB_STATUS, False, dbInteger, , , 0)
+        Call AddFieldToTable(tblNew, SCORES_TAB_LOGONOFF, False, dbInteger, , , 2)
+        Call AddFieldToTable(tblNew, SCORES_TAF_CURRENTROUND, False, dbInteger, , , 0)
+        Call AddFieldToTable(tblNew, SCORES_TAF_CURRENTBOARD, False, dbInteger, , , 0)
+        Call AddFieldToTable(tblNew, SCORES_TAF_UPDATEFROMROUND, False, dbInteger, , , 0)
+    dbScores.TableDefs.Append tblNew
+        
+        
+    'table RoundData. Contains the movement data for all tables.
+    
+    Set tblNew = dbScores.CreateTableDef(SCORES_TBL_ROUNDS)
+        Call AddFieldToTable(tblNew, SCORES_ROU_SECTION, False, dbInteger)
+        Call AddFieldToTable(tblNew, SCORES_ROU_TABLE, False, dbInteger)
+        Call AddFieldToTable(tblNew, SCORES_ROU_ROUND, False, dbInteger)
+        Call AddFieldToTable(tblNew, SCORES_ROU_NSPAIR, False, dbInteger)
+        Call AddFieldToTable(tblNew, SCORES_ROU_EWPAIR, False, dbInteger)
+        Call AddFieldToTable(tblNew, SCORES_ROU_LOWBOARD, False, dbInteger)
+        Call AddFieldToTable(tblNew, SCORES_ROU_HIGHBOARD, False, dbInteger)
+	Call AddFieldToTable(tblnew, SCORES_RON_CUSTOMBOARDS, True, dbText, , 255)
+    dbScores.TableDefs.Append tblNew
+    
+    
+    'table ReceivedData. You need to create it here, but it will be filled by
+    'BPC when results are coming in.
+
+    For t = 1 To 2
+        Set tblNew = dbScores.CreateTableDef(IIf(t = 1, SCORES_TBL_DATA, SCORES_TBL_INTERMEDIATEDATA))
+           Call AddFieldToTable(tblNew, SCORES_DAT_ID, False, dbLong, dbAutoIncrField)
+           Call AddFieldToTable(tblNew, SCORES_DAT_SECTION, False, dbInteger)
+           Call AddFieldToTable(tblNew, SCORES_DAT_TABLE, False, dbInteger)
+           Call AddFieldToTable(tblNew, SCORES_DAT_ROUND, False, dbInteger)
+           Call AddFieldToTable(tblNew, SCORES_DAT_BOARD, False, dbInteger)
+           Call AddFieldToTable(tblNew, SCORES_DAT_PAIRNS, False, dbInteger)
+           Call AddFieldToTable(tblNew, SCORES_DAT_PAIREW, False, dbInteger)
+           Call AddFieldToTable(tblNew, SCORES_DAT_DECLARER, False, dbInteger)
+           Call AddFieldToTable(tblNew, SCORES_DAT_DIRECTION, True, dbText, , 2, "")
+           Call AddFieldToTable(tblNew, SCORES_DAT_CONTRACT, True, dbText, , 10, "")
+           Call AddFieldToTable(tblNew, SCORES_DAT_RESULT, True, dbText, , 10, "")
+           Call AddFieldToTable(tblNew, SCORES_DAT_LEADCARD, True, dbText, , 10, "")
+           Call AddFieldToTable(tblNew, SCORES_DAT_REMARKS, True, dbText, , 255, "")
+           Call AddFieldToTable(tblNew, SCORES_DAT_DATE, False, dbDate)
+           Call AddFieldToTable(tblNew, SCORES_DAT_TIME, False, dbDate)
+           Call AddFieldToTable(tblNew, SCORES_DAT_PROCESSED, False, dbBoolean, , , False)
+           For i = 1 To 4
+               Call AddFieldToTable(tblNew, SCORES_DAT_PROCESSED & CStr(i), False, dbBoolean, , , False)
+           Next i
+           Call AddFieldToTable(tblNew, SCORES_DAT_ERASED, False, dbBoolean, , , False)
+       dbScores.TableDefs.Append tblNew
+    Next t
+        
+        
+    'table PlayerNumbers. Only required if you want your scoring program to have
+    'the possibility of registering the player numbers from Bridgemate input.
+    
+    Set tblNew = dbScores.CreateTableDef(SCORES_TBL_PLAYERCODES)
+        Call AddFieldToTable(tblNew, SCORES_NUM_SECTION, False, dbInteger)
+        Call AddFieldToTable(tblNew, SCORES_NUM_TABLE, False, dbInteger)
+        Call AddFieldToTable(tblNew, SCORES_NUM_DIRECTION, False, dbText, , 2, "")
+        Call AddFieldToTable(tblNew, SCORES_NUM_NUMBER, True, dbText, , 16, "")
+    dbScores.TableDefs.Append tblNew
+    
+    
+    'table BiddingData. Only required when you want to record the complete bidding
+    'and play using Bridgemate. Requires "Bridgemate Recorder" version.
+    
+    Set tblNew = dbScores.CreateTableDef(SCORES_TBL_BIDDINGDATA)
+        Call AddFieldToTable(tblNew, SCORES_BID_ID, False, dbLong, dbAutoIncrField)
+        Call AddFieldToTable(tblNew, SCORES_BID_SECTION, False, dbInteger)
+        Call AddFieldToTable(tblNew, SCORES_BID_TABLE, False, dbInteger)
+        Call AddFieldToTable(tblNew, SCORES_BID_ROUND, False, dbInteger)
+        Call AddFieldToTable(tblNew, SCORES_BID_BOARD, False, dbInteger)
+        Call AddFieldToTable(tblNew, SCORES_BID_COUNTER, False, dbInteger)
+        Call AddFieldToTable(tblNew, SCORES_BID_DIRECTION, True, dbText, , 2, "")
+        Call AddFieldToTable(tblNew, SCORES_BID_BID, True, dbText, , 10, "")
+        Call AddFieldToTable(tblNew, SCORES_BID_DATE, False, dbDate)
+        Call AddFieldToTable(tblNew, SCORES_BID_TIME, False, dbDate)
+        Call AddFieldToTable(tblNew, SCORES_BID_ERASED, False, dbBoolean)
+    dbScores.TableDefs.Append tblNew
+    
+    
+    'table PlayData. Only required when you want to record the complete bidding
+    'and play using Bridgemate. Requires "Bridgemate Recorder" version.
+    
+    Set tblNew = dbScores.CreateTableDef(SCORES_TBL_PLAYDATA)
+        Call AddFieldToTable(tblNew, SCORES_PLA_ID, False, dbLong, dbAutoIncrField)
+        Call AddFieldToTable(tblNew, SCORES_PLA_SECTION, False, dbInteger)
+        Call AddFieldToTable(tblNew, SCORES_PLA_TABLE, False, dbInteger)
+        Call AddFieldToTable(tblNew, SCORES_PLA_ROUND, False, dbInteger)
+        Call AddFieldToTable(tblNew, SCORES_PLA_BOARD, False, dbInteger)
+        Call AddFieldToTable(tblNew, SCORES_PLA_COUNTER, False, dbInteger)
+        Call AddFieldToTable(tblNew, SCORES_PLA_DIRECTION, True, dbText, , 2, "")
+        Call AddFieldToTable(tblNew, SCORES_PLA_CARD, True, dbText, , 10, "")
+        Call AddFieldToTable(tblNew, SCORES_PLA_DATE, False, dbDate)
+        Call AddFieldToTable(tblNew, SCORES_PLA_TIME, False, dbDate)
+        Call AddFieldToTable(tblNew, SCORES_PLA_ERASED, False, dbBoolean)
+    dbScores.TableDefs.Append tblNew
+	
+
+    'table Settings. Only required when you want to control Bridgemate settings
+    'from the scoring program. Include only those fields you want to control the
+    'values.
+
+    Set tblNew = dbScores.CreateTableDef(SCORES_TBL_SETTINGS)
+        Call AddFieldToTable(tblNew, SCORES_SET_SHOWRESULTS, False, dbBoolean, , , True)
+        Call AddFieldToTable(tblNew, SCORES_SET_SHOWOWNRESULT, False, dbBoolean, , , True)
+        Call AddFieldToTable(tblNew, SCORES_SET_REPEATRESULTS, False, dbBoolean, , , False)
+        Call AddFieldToTable(tblNew, SCORES_SET_MAXIMUMRESULTS, False, dbInteger, , , 0)
+        Call AddFieldToTable(tblNew, SCORES_SET_SHOWPERCENTAGE, False, dbBoolean, , , True)
+        Call AddFieldToTable(tblNew, SCORES_SET_GROUPSECTIONS, False, dbBoolean, , , False)
+        Call AddFieldToTable(tblNew, SCORES_SET_SCOREPOINTS, False, dbInteger, , , 1)
+        Call AddFieldToTable(tblNew, SCORES_SET_ENTERRESULTSMETHOD, False, dbInteger, , , 0)
+        Call AddFieldToTable(tblNew, SCORES_SET_SHOWPAIRNUMBERS, False, dbBoolean, , , True)
+        Call AddFieldToTable(tblNew, SCORES_SET_INTERMEDIATERESULTS, False, dbBoolean, , , False)
+        Call AddFieldToTable(tblNew, SCORES_SET_AUTOPOWEROFFTIME, False, dbInteger, , , 20)
+        Call AddFieldToTable(tblNew, SCORES_SET_VERIFICATIONTIME, False, dbInteger, , , 2)
+        Call AddFieldToTable(tblNew, SCORES_SET_SHOWCONTRACT, False, dbInteger, , , 1)
+        Call AddFieldToTable(tblNew, SCORES_SET_LEADCARD, False, dbBoolean, , , False)
+        Call AddFieldToTable(tblNew, SCORES_SET_MEMBERNUMBERS, False, dbBoolean, , , False)
+        Call AddFieldToTable(tblNew, SCORES_SET_MEMBERNUMBERSNOBLANKENTRY, False, dbBoolean, , , False)
+        Call AddFieldToTable(tblNew, SCORES_SET_BOARDORDERVERIFICATION, False, dbBoolean, , , True)
+        Call AddFieldToTable(tblNew, SCORES_SET_HANDRECORDVALIDATION, False, dbBoolean, , , True)
+        Call AddFieldToTable(tblNew, SCORES_SET_AUTOSHUTDOWNBPC, False, dbBoolean, , , False)
+
+    dbScores.TableDefs.Append tblNew
+
+
+    'Add the current computer to the client list. This computer will be the default
+    'client.
+        
+    Call AddClientToDatabase(dbScores)
+    
+    
+    'Add properties to the database (not compulsory yet).
+    
+    Call AddPropertyToDB(dbScores, SCORES_PROPERTY_MOVEMENT, dbBoolean, False)
+    Call AddPropertyToDB(dbScores, SCORES_PROPERTY_CREATEDBY, dbText, "BMPro" & GetBMPROVersionString(True))
+    Call AddPropertyToDB(dbScores, SCORES_PROPERTY_DBVERSION, dbText, "1.1")
+    
+    
+    'Database is created and will be closed. The following step you should do, is fill in the
+    'tables Section, Tables, RoundData and PlayerNumbers (optionally) with the correct
+    'records and data.
+    
+    dbScores.Close
+    
+End Sub
+
+Public Sub AddClientToDatabase(DB As Database)
+
+    'Add the current computer to the client tables.
+    
+    Dim tblClient As Recordset
+    Set tblClient = DB.OpenRecordset(SCORES_TBL_CLIENTS)
+    
+    With tblClient
+        .AddNew
+        .Fields(SCORES_CLI_COMPUTER) = GetComputerName    'This is a API call
+        .Update
+        .Close
+    End With
+    
+End Sub
+
+Public Function GetClientIDFromDB(strClientName As String) As Integer
+
+    'Find the client name strClientName in the Client table and return its ID.
+    
+    Dim tblClient As Recordset
+    Set tblClient = dbScores.OpenRecordset(SCORES_TBL_CLIENTS, dbOpenDynaset)
+    
+    tblClient.FindFirst SCORES_CLI_COMPUTER & "='" & strClientName & "'"
+    GetClientIDFromDB = IIf(tblClient.NoMatch = True, 0, tblClient.Fields(SCORES_CLI_ID))
+    
+    tblClient.Close
+    
+End Function
+
+Public Sub AddPropertyToDB(DB As Database, strProperty As String, dbType As Long, varStandardValue As Variant)
+
+    'Add a property to the database.
+    
+    DB.Properties.Append DB.CreateProperty(strProperty, dbType, varStandardValue)
+
+End Sub
+
+Public Sub SetDBMovementToRead(DB As Database)
+
+    'set the property MovementRead to true.
+    
+    DB.Properties(SCORES_PROPERTY_MOVEMENT) = True
+    
+End Sub
+
+Public Function ReadDBProperty(DB As Database, strProperty As String) As Variant
+    
+    'Read property from database.
+    
+    ReadDBProperty = DB.Properties(strProperty)
+    
+End Function
+
+Public Function GetRecordCount(recTbl As Recordset) As Long
+    
+    'Return the number of records within a given recordset.
+    
+    On Error Resume Next
+        
+    recTbl.MoveLast
+    recTbl.MoveFirst
+    GetRecordCount = recTbl.RecordCount
+    Err.Clear
+    
+End Function
+
+Public Function GetComputerName() As String
+    
+    'get the name of the current computer.
+    
+    Dim ComputerName$, Success As Long
+    
+    ComputerName$ = String$(1024, 32)
+    Success = apiGetComputerName(ComputerName$, 1024)
+    If Success Then GetComputerName = Left$(LTrim(RTrim(ComputerName$)), Len(LTrim(RTrim(ComputerName$))) - 1)
+
+End Function
+
+Public Function GetBMPROVersionString(booIncludeRevision As Boolean) As String
+
+    'Create a string containing BMPro version number
+    
+    GetBMPROVersionString = CStr(App.Major) & "." & CStr(App.Minor) & IIf(booIncludeRevision = True, "." & CStr(App.Revision), "")
+    
+End Function
