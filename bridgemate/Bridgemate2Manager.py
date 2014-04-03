@@ -21,21 +21,23 @@ class BM2Manager(object):
         self.config = ProjectConfig(project_name)
         self.project_name = project_name
         scheduler_class = globals()[self.config.scheduler_type]
-        self.scheduler = scheduler_class()
+        self.scheduler = scheduler_class(self.config.scheduler_metadata)
 
     def run(self):
         logger.info("Start full run")
         for r in xrange(self.config.current_round, self.config.total_round+1):
             self.run_one_round()
 
-    def setup_config(self, tm_name, team_count, scheduler_type, total_round, board_count, start_board_number=1, current_round=1, section_id=DEFAULT_SECTION_ID, section_letter=DEFAULT_SECTION_LETTER):
-        self.config.setup(tm_name, team_count, scheduler_type, total_round, current_round, board_count, start_board_number, section_id, section_letter)
+    def setup_config(self, tm_name, team_count, scheduler_type, scheduler_metadata, total_round, board_count, start_board_number=1, current_round=1, section_id=DEFAULT_SECTION_ID, section_letter=DEFAULT_SECTION_LETTER):
+        self.config.setup(tm_name, team_count, scheduler_type, scheduler_metadata, total_round, current_round, board_count, start_board_number, section_id, section_letter)
+        scheduler_class = globals()[self.config.scheduler_type]
+        self.scheduler = scheduler_class(self.config.scheduler_metadata)
 
     def run_one_round(self):
         logger.info("== %d Round == " % self.config.current_round)
         self.init_bws_file()
         self.sync_with_bcs()
-        self.save_config()
+        self.end_and_save_config()
 
     def init_bws_file(self):
         logger.info("Init .bws file")
@@ -76,10 +78,11 @@ class BM2Manager(object):
         bcs.close()
         logger.info("Done sync")
 
-    def save_config(self):
+    def end_and_save_config(self):
         logger.info("Write config back to json format")
         self.config.start_board_number = self.config.start_board_number + self.config.board_count
         self.config.current_round = self.config.current_round + 1
+        self.config.scheduler_metadata = self.scheduler.get_metadata()
         self.config.write()
 
 

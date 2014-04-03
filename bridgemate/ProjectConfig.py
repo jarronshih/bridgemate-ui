@@ -11,13 +11,14 @@ class ProjectConfig(object):
         if os.path.exists(self.config_path):
             self.load()
         else:
-            self.setup('TM', 0, "CustomScheduler", 0, 1, 0, 1, 1, 'A')
+            self.setup('TM', 0, "CustomScheduler", [], 0, 1, 0, 1, 1, 'A')
         
 
-    def setup(self, tm_name, team_count, scheduler_type, total_round, current_round, board_count, start_board_number, section_id, section_letter):
+    def setup(self, tm_name, team_count, scheduler_type, scheduler_metadata, total_round, current_round, board_count, start_board_number, section_id, section_letter):
         self.tm_name = tm_name
         self.team_count = team_count
         self.scheduler_type = scheduler_type
+        self.scheduler_metadata = scheduler_metadata
         self.total_round = total_round
         self.current_round = current_round
         self.section_id = section_id
