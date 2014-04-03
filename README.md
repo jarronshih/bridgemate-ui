@@ -24,6 +24,11 @@ TODO
 ====
 - bridgemate2manager.py, data process 
 - scheduler.py, expand different kind of scheduler
+  - RoundRobin alg.
+  - Swiss alg, unknow
 - WebUI ?
+  - in one long page
+  - Carousel at top
+  - detail below
 - QR code -> copy ?
 - error handle of BCS, if can't open ?
