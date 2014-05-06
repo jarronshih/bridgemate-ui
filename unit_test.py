@@ -23,7 +23,7 @@ def test_run_roundrobin():
                             scheduler_type="RoundRobinScheduler", 
                             scheduler_metadata=
                             {
-                                team_count = 4
+                                "team_count": 4,
                             }
                             total_round=4, 
                             board_count=3
