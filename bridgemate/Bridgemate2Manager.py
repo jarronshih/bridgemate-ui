@@ -87,20 +87,13 @@ class BM2Manager(object):
 
 
 # Use these function to open project
-def start_project(project_name):
-    project_folder = get_project_folder(project_name)
-    if os.path.exists(project_folder):
-        return open_project(project_name)
-    else:
-        return create_project(project_name)
-
 def create_project(project_name):
     project_folder = get_project_folder(project_name)
 
-    # remove exist project
     if os.path.exists(project_folder):
-        import shutil
-        shutil.rmtree(project_folder)
+        return None
+        #import shutil
+        #shutil.rmtree(project_folder)
     os.makedirs(project_folder)
 
     global logger

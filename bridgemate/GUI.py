@@ -14,7 +14,7 @@ class MainFrame(wx.Frame):
             title=title,
             style= wx.CAPTION | wx.SYSTEM_MENU  | wx.MINIMIZE_BOX | wx.CLOSE_BOX | wx.STAY_ON_TOP,
             )
-
+        self.bm2_manager = None
         self.InitUI()
         self.SetSize((MAINFRAME_WIDTH, MAINFRAME_HEIGHT))
         self.Centre()
@@ -50,7 +50,15 @@ class MainFrame(wx.Frame):
         ret = dlg.ShowModal()
         if ret == wx.ID_OK:
             project_name = dlg.GetValue()
-            print "You chose %s" % project_name
+            self.bm2_manager = create_project(project_name)
+
+            if self.bm2_manager is None:
+                err_dial = wx.MessageDialog(None, 'Project exist !', 'Error', wx.OK | wx.ICON_ERROR)
+                err_dial.ShowModal()
+                err_dial.Destroy()
+            else:
+                self.InitUI()
+
         dlg.Destroy()
         
     def OnOpen(self, e):
@@ -60,7 +68,8 @@ class MainFrame(wx.Frame):
         dlg.SetPath(PROJECT_FOLDER)
         if dlg.ShowModal() == wx.ID_OK:
             project_name = dlg.GetPath()
-            print "You chose %s" % project_name
+            self.bm2_manager = open_project(project_name)
+            self.InitUI()
         dlg.Destroy()
 
 
