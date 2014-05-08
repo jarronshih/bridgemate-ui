@@ -9,9 +9,10 @@ Install on Windows
 ===================
 - python27
 - win32com python module
+- wxpython python module
 - Access 2010
-- Bridgemate Controller Software
-- BM2ServerDriver
+- Bridgemate Controller Software (provide by bridgemate)
+- BM2ServerDriver (provide by bridgemate)
 
 
 
@@ -32,3 +33,4 @@ TODO
   - detail below
 - QR code -> copy ?
 - error handle of BCS, if can't open ?
+- UI (http://zetcode.com/wxpython/)
