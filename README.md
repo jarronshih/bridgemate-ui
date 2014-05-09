@@ -10,6 +10,7 @@ Install on Windows
 - python27
 - win32com python module
 - wxpython python module
+- pyinstaller python module
 - Access 2010
 - Bridgemate Controller Software (provide by bridgemate)
 - BM2ServerDriver (provide by bridgemate)
