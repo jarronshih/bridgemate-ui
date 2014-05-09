@@ -25,11 +25,11 @@ class BM2Manager(object):
 
     def run(self):
         logger.info("Start full run")
-        for r in xrange(self.config.current_round, self.config.total_round+1):
+        for r in xrange(self.config.current_round, self.config.round_count+1):
             self.run_one_round()
 
-    def setup_config(self, tm_name, team_count, scheduler_type, scheduler_metadata, total_round, board_count, start_board_number=1, current_round=1, section_id=DEFAULT_SECTION_ID, section_letter=DEFAULT_SECTION_LETTER):
-        self.config.setup(tm_name, team_count, scheduler_type, scheduler_metadata, total_round, current_round, board_count, start_board_number, section_id, section_letter)
+    def setup_config(self, tm_name, team_count, scheduler_type, scheduler_metadata, round_count, board_count, start_board_number=1, current_round=1, section_id=DEFAULT_SECTION_ID, section_letter=DEFAULT_SECTION_LETTER):
+        self.config.setup(tm_name, team_count, scheduler_type, scheduler_metadata, round_count, current_round, board_count, start_board_number, section_id, section_letter)
         scheduler_class = globals()[self.config.scheduler_type]
         self.scheduler = scheduler_class(self.config.scheduler_metadata)
 

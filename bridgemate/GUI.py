@@ -7,6 +7,7 @@ MAINFRAME_WIDTH=600
 
 ID_MAINFRAME=100
 
+
 class MainFrame(wx.Frame):
     def __init__(self):
         super(MainFrame, self).__init__(
@@ -39,39 +40,29 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_quit, quit_item)
 
         # Button
-        self.edit_config_btn = wx.Button(self, label='Edit Config', pos=(10,20) )
         self.run_one_round_btn = wx.Button(self, label='Run one round', pos=(10,50) )
-
-        self.Bind(wx.wx.EVT_BUTTON, self.on_edit_config, self.edit_config_btn)
-        self.Bind(wx.wx.EVT_BUTTON, self.on_run_one_round, self.run_one_round_btn)
+        self.Bind(wx.EVT_BUTTON, self.on_run_one_round, self.run_one_round_btn)
 
         # Statusbar
         self.statusbar = self.CreateStatusBar()
         self.statusbar.SetStatusText('')
 
-        #Other        
+        #Other     
+        # Team count, round count, current round
+        # btn: run, start board
         
 
     def on_quit(self, e):
         self.Close()
 
     def on_new(self, e):
-        import datetime
-        today_str = datetime.datetime.today().strftime("%Y_%m_%d")
-        dlg = wx.TextEntryDialog(None,'Enter project name:','New Project', '%s_touronment' % today_str)
-        ret = dlg.ShowModal()
-        if ret == wx.ID_OK:
-            project_name = dlg.GetValue()
-            self.bm2_manager = create_project(project_name)
-
-            if self.bm2_manager is None:
-                err_dial = wx.MessageDialog(None, 'Project exist !', 'Error', wx.OK | wx.ICON_ERROR)
-                err_dial.ShowModal()
-                err_dial.Destroy()
-            else:
-                self.reload_project()
-
+        dlg = NewProjectFrame(self)
+        if dlg.ShowModal() == wx.ID_OK:
+            project_name = dlg.get_project_name()
+            self.bm2_manager = open_project(project_name)
+            self.reload_project()
         dlg.Destroy()
+
         
     def on_open(self, e):
         dlg = wx.DirDialog(self, "Choose a directory:",
@@ -84,14 +75,6 @@ class MainFrame(wx.Frame):
             self.reload_project()
         dlg.Destroy()
 
-    def on_edit_config(self, e):
-        if self.bm2_manager is None:
-            return
-
-        dlg = ProjectConfigFrame(parent=self,config=self.bm2_manager.config)
-        if dlg.ShowModal() == wx.ID_OK:
-            self.reload_project()
-        dlg.Destroy()
 
     def on_run_one_round(self, e):
         self.bm2_manager.run_one_round()
@@ -100,33 +83,164 @@ class MainFrame(wx.Frame):
         if self.bm2_manager is None:
             self.statusbar.SetStatusText("Please Open / Create project")
             self.SetTitle("Main")
-            self.edit_config_btn.Disable()
             self.run_one_round_btn.Disable()
 
         else:
             self.statusbar.SetStatusText(status_string)
             self.SetTitle(self.bm2_manager.config.project_name)
-            self.edit_config_btn.Enable()
             self.run_one_round_btn.Enable()
 
-
-class ProjectConfigFrame(wx.Dialog):
-    def __init__(self, config, parent):
-        super(ProjectConfigFrame, self).__init__(parent=parent)
-        self.config = config
+class NewProjectFrame(wx.Dialog):
+    def __init__(self, parent):
+        super(NewProjectFrame, self).__init__(parent=parent)
         
+        self.on_init()
+
+        self.SetTitle("New Project")
         self.Centre()
         self.Show(True)
 
     def on_init(self):
-        wx.StaticText(self, -1, 'Width:', (20, 20))
-        wx.StaticText(self, -1, 'Height:', (20, 70))
-        self.sc1 = wx.SpinCtrl(self, -1, str(w), (80, 15), (60, -1), min=200, max=500)
-        self.sc2 = wx.SpinCtrl(self, -1, str(h), (80, 65), (60, -1), min=200, max=500)
+        self.SetSize((400,300))
+        panel = wx.Panel(self)
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        hbox1 = wx.BoxSizer(wx.HORIZONTAL)
+        st1 = wx.StaticText(panel, label='Proejct Name: ')
+        hbox1.Add(st1, flag=wx.RIGHT, border=8)
+        self.project_name_textctrl = wx.TextCtrl(panel)
+        import datetime
+        today_str = datetime.datetime.today().strftime("%Y_%m_%d")
+        self.project_name_textctrl.AppendText('%s_tm' % today_str)
+        hbox1.Add(self.project_name_textctrl, proportion=1)
+        vbox.Add(hbox1, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP, border=10)
+
+        vbox.Add((-1, 10))
+
+        hbox2 = wx.BoxSizer(wx.HORIZONTAL)
+        st2 = wx.StaticText(panel, label='Scheduler: Swiss')
+        hbox2.Add(st2)
+        vbox.Add(hbox2, flag=wx.LEFT | wx.TOP, border=10)
+
+        vbox.Add((-1, 10))
 
 
-        save_btn = wx.Button(self, 1, 'Save', (20, 120))
-        self.Bind(wx.EVT_BUTTON, self.OnSave, id=1)
+        hbox3 = wx.BoxSizer(wx.HORIZONTAL)
+        st3 = wx.StaticText(panel, label='Team Count: ')
+        hbox3.Add(st3, flag=wx.RIGHT, border=8)
+        self.team_count_textctrl = wx.TextCtrl(panel)
+        hbox3.Add(self.team_count_textctrl, proportion=1)
+        vbox.Add(hbox3, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP, border=10)
+
+        vbox.Add((-1, 10))
+        
+
+        # line4 = wx.StaticLine(panel)
+        # vbox.Add(line4, border=10)
+
+        # vbox.Add((-1, 10))
+
+        hbox5 = wx.BoxSizer(wx.HORIZONTAL)
+        st5 = wx.StaticText(panel, label='Round Count: ')
+        hbox5.Add(st5, flag=wx.RIGHT, border=8)
+        self.round_count_textctrl = wx.TextCtrl(panel)
+        hbox5.Add(self.round_count_textctrl, proportion=1)
+        vbox.Add(hbox5, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP, border=10)
+
+        vbox.Add((-1, 10))
+
+        hbox6 = wx.BoxSizer(wx.HORIZONTAL)
+        st6 = wx.StaticText(panel, label='Board Count: ')
+        hbox6.Add(st6, flag=wx.RIGHT, border=8)
+        self.board_count_textctrl = wx.TextCtrl(panel)
+        hbox6.Add(self.board_count_textctrl, proportion=1)
+        vbox.Add(hbox6, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP, border=10)
+
+        vbox.Add((-1, 25))
+
+        hbox7 = wx.BoxSizer(wx.HORIZONTAL)
+        btn7_1 = wx.Button(panel, label='OK', size=(70, 30))
+        hbox7.Add(btn7_1)
+        btn7_2 = wx.Button(panel, label='Close', size=(70, 30))
+        hbox7.Add(btn7_2)
+        vbox.Add(hbox7, flag=wx.ALIGN_RIGHT|wx.RIGHT, border=5)
+
+        panel.SetSizer(vbox)
+
+        self.Bind(wx.EVT_BUTTON, self.on_save, btn7_1)
+        self.Bind(wx.EVT_BUTTON, self.on_close, btn7_2)
+
+    def on_save(self, e):
+        ret, v = self.validate_input()
+        if ret:
+            # create project
+            project = create_project(v["project_name"])
+            project.setup_config( tm_name='TM', 
+                            team_count=v["team_count"], 
+                            scheduler_type="CustomScheduler",
+                            scheduler_metadata=
+                            {
+                                "match":
+                                [
+                                    [ (1, 1, 2), (2, 2, 1) ]  # Round 1 (table_id, ns_team, ew_team)
+                                ]
+                            },
+                            round_count=v["round_count"],
+                            board_count=v["board_count"]
+                            )
+            self.EndModal(wx.ID_OK)
+        else:
+            err_dial = wx.MessageDialog(None, v, 'Error', wx.OK | wx.ICON_ERROR)
+            err_dial.ShowModal()
+            err_dial.Destroy()
+
+    def on_close(self, e):
+        self.Close()
+
+    def validate_input(self):
+        project_name = self.project_name_textctrl.GetValue()
+        team_count = self.team_count_textctrl.GetValue()
+        round_count = self.round_count_textctrl.GetValue()
+        board_count = self.board_count_textctrl.GetValue()
+
+        values = { 
+            "project_name":project_name, 
+            "team_count": team_count,
+            "board_count":board_count, 
+            "round_count": round_count, 
+        }
+
+        if os.path.exists(get_project_folder(values["project_name"])):
+            return False, "Project exist!"
+
+        if not values["team_count"].isdigit():
+            return False, "Team count error"
+        else:
+            values["team_count"] = int(values["team_count"])
+
+        if not values["board_count"].isdigit():
+            return False, "Board count error"
+        else:
+            values["board_count"] = int(values["board_count"])
+
+        if not values["round_count"].isdigit():
+            return False, "round_count error"
+        else:
+            values["round_count"] = int(values["round_count"])
+
+        return True, values
+
+    def get_project_name(self):
+        return self.project_name_textctrl.GetValue()
+
+
+class RunFrame(wx.Dialog):
+    def __init__(self, parent):
+        pass
+
+    def init_ui(self):
+        pass
 
 
 class MainApp(wx.App):

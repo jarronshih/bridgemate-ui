@@ -22,6 +22,11 @@ How to use ?
 python main.py [create/open] <PROJECT_NAME>
 
 
+Troubleshooting
+===============
+Close Access and BCS program before you run the program.
+
+
 TODO
 ====
 - bridgemate2manager.py, data process 

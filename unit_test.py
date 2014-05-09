@@ -13,7 +13,7 @@ def test_run_custom():
                                     [ (1, 1, 2), (2, 2, 1) ]  # Round 1 (table_id, ns_team, ew_team)
                                 ]
                             },
-                            total_round=1, 
+                            round_count=1, 
                             board_count=2
                             )
     project.run()
@@ -28,7 +28,7 @@ def test_run_custom():
 #                             {
 #                                 "team_count": 4,
 #                             }
-#                             total_round=4, 
+#                             round_count=4, 
 #                             board_count=3
 #                             )
 #     project.run()
