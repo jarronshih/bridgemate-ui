@@ -5,7 +5,7 @@ class BaseScheduler(object):
     def __init__(self, meta_data):
         raise NotImplementedError
 
-    def schedule_round(self, round_number):
+    def schedule_next_round(self):
         raise NotImplementedError
 
     def get_match_by_round(self, current_round):
@@ -13,6 +13,12 @@ class BaseScheduler(object):
         raise NotImplementedError
 
     def get_metadata(self):
+        raise NotImplementedError
+
+    def is_next_round_available(self):
+        raise NotImplementedError
+
+    def get_current_round(self):
         raise NotImplementedError
 
 
@@ -23,15 +29,33 @@ class BaseScheduler(object):
 class CustomScheduler(BaseScheduler):
     def __init__(self, meta_data):
         self.match = meta_data["match"]
+        self.round_count = meta_data["round_count"]
+        self.current_round = meta_data["current_round"]
 
-    def schedule_round(self, round_number):
-        pass
+    def schedule_next_round(self):
+        if not self.is_next_round_available():
+            raise
+        else:
+            self.current_round = self.current_round + 1
 
-    def get_match_by_round(self, round_number):
+    def get_match_by_round(self, round_number=None):
+        if round_number is None:
+            round_number = self.current_round
         return self.match[round_number-1]
 
     def get_metadata(self):
-        return {"match":self.match}
+        return {
+            "match": self.match,
+            "round_count": self.round_count,
+            "current_round": self.current_round
+        }
+
+    def is_next_round_available(self):
+        return self.round_count > self.current_round 
+
+    def get_current_round(self):
+        return self.current_round
+
 
 # class RoundRobinScheduler(BaseScheduler):
 #     def __init__(self, meta_data):

@@ -176,19 +176,23 @@ class NewProjectFrame(wx.Dialog):
         if ret:
             # create project
             project = create_project(v["project_name"])
-            project.setup_config( tm_name='TM', 
-                            team_count=v["team_count"], 
-                            scheduler_type="CustomScheduler",
-                            scheduler_metadata=
-                            {
-                                "match":
-                                [
-                                    [ (1, 1, 2), (2, 2, 1) ]  # Round 1 (table_id, ns_team, ew_team)
-                                ]
-                            },
-                            round_count=v["round_count"],
-                            board_count=v["board_count"]
-                            )
+            project.setup_config(
+                tm_name="TM", 
+                team_count=v["team_count"], 
+                board_count=v["board_count"], 
+                scheduler_type="CustomScheduler", 
+                scheduler_metadata={
+                    "match":
+                    [
+                        [ (1, 1, 2), (2, 2, 1) ]  # Round 1 (table_id, ns_team, ew_team)
+                    ],
+                    "round_count": v["round_count"],
+                    "current_round": 0
+                }, 
+                start_board_number=1, 
+                section_id=1, 
+                section_letter='A'
+            )
             self.EndModal(wx.ID_OK)
         else:
             err_dial = wx.MessageDialog(None, v, 'Error', wx.OK | wx.ICON_ERROR)
