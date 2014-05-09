@@ -1,4 +1,4 @@
-from bridgemate.Bridgemate2Manager import open_project, create_project, start_project
+from bridgemate.Bridgemate2Manager import open_project, create_project
 
 def test_run_custom():
     # Run Project in
@@ -12,7 +12,7 @@ def test_run_custom():
                                 [
                                     [ (1, 1, 2), (2, 2, 1) ]  # Round 1 (table_id, ns_team, ew_team)
                                 ]
-                            }
+                            },
                             total_round=1, 
                             board_count=2
                             )
