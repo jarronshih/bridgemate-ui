@@ -8,7 +8,7 @@ def test_run_custom():
         team_count=2, 
         board_count=2, 
         scheduler_type="CustomScheduler", 
-        scheduler_metadata{
+        scheduler_metadata={
             "match":
             [
                 [ (1, 1, 2), (2, 2, 1) ]  # Round 1 (table_id, ns_team, ew_team)
