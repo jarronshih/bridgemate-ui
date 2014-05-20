@@ -2,6 +2,7 @@ import os
 import json
 from utils.config import *
 from utils.Tools import get_project_folder, get_project_file_path
+from bridgemate.Scheduler import *
 
 class ProjectConfig(object):
     def __init__(self, project_name):
@@ -49,6 +50,12 @@ class ProjectConfig(object):
         f.close()
 
         self.load(json_content)
+
+    def get_scheduler(self):
+        scheduler_class = globals()[self.scheduler_type]
+        scheduler = scheduler_class(self.scheduler_metadata)
+        return scheduler
+
 
 
 

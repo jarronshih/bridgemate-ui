@@ -20,18 +20,11 @@ class BM2Manager(object):
         logger.info("Init BM2Manager")
         self.config = ProjectConfig(project_name)
         self.project_name = project_name
-        scheduler_class = globals()[self.config.scheduler_type]
-        self.scheduler = scheduler_class(self.config.scheduler_metadata)
-
-    # def run(self):
-    #     logger.info("Start full run")
-    #     for r in xrange(self.config.current_round, self.config.round_count+1):
-    #         self.run_one_round()
+        self.scheduler = self.config.get_scheduler()
 
     def setup_config(self, tm_name, team_count, board_count, scheduler_type, scheduler_metadata, start_board_number, section_id, section_letter):
         self.config.setup(tm_name, team_count, board_count, scheduler_type, scheduler_metadata, start_board_number, section_id, section_letter)
-        scheduler_class = globals()[self.config.scheduler_type]
-        self.scheduler = scheduler_class(self.config.scheduler_metadata)
+        self.scheduler = self.config.get_scheduler()
 
     def run_one_round(self):
         if self.scheduler.is_next_round_available():

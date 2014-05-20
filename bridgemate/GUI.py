@@ -7,7 +7,11 @@ MAINFRAME_WIDTH=600
 
 ID_MAINFRAME=100
 
+PROJECT_STATUS_NONE=0
+PROJECT_STATUS_CONFIG=1
+PROJECT_STATUS_RUNNING=2
 
+# Main UI
 class MainFrame(wx.Frame):
     def __init__(self):
         super(MainFrame, self).__init__(
@@ -20,6 +24,7 @@ class MainFrame(wx.Frame):
         self.SetSize((MAINFRAME_WIDTH, MAINFRAME_HEIGHT))
         self.Centre()
         self.reload_project()
+        self.status=PROJECT_STATUS_NONE
         
 
     def init_UI(self):
@@ -39,28 +44,36 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_open, open_item)
         self.Bind(wx.EVT_MENU, self.on_quit, quit_item)
 
-        # Button
-        self.run_one_round_btn = wx.Button(self, label='Run one round', pos=(10,50) )
-        self.Bind(wx.EVT_BUTTON, self.on_run_one_round, self.run_one_round_btn)
 
         # Statusbar
         self.statusbar = self.CreateStatusBar()
         self.statusbar.SetStatusText('')
 
-        #Other     
-        # Team count, round count, current round
-        # btn: run, start board
-        
+        # Project Status Panel
+        self.project_status_panel = ProjectStatusPanel(self)
+
+        # Project Running Panel
+        self.project_running_panel = ProjectStatusPanel(self)
+
+        # Setup Panel
+        self.project_status_panel.Hide()
+        self.project_running_panel.Hide()
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.sizer.Add(self.project_status_panel, 1, wx.EXPAND)
+        self.sizer.Add(self.project_running_panel, 1, wx.EXPAND)
+        self.SetSizer(self.sizer)
 
     def on_quit(self, e):
         self.Close()
 
     def on_new(self, e):
-        dlg = NewProjectFrame(self)
+        dlg = NewProjectDialog(self)
         if dlg.ShowModal() == wx.ID_OK:
             project_name = dlg.get_project_name()
             self.bm2_manager = open_project(project_name)
-            self.reload_project()
+            self.status = PROJECT_STATUS_CONFIG
+
+        self.reload_project()
         dlg.Destroy()
 
         
@@ -71,28 +84,96 @@ class MainFrame(wx.Frame):
         dlg.SetPath(PROJECT_FOLDER)
         if dlg.ShowModal() == wx.ID_OK:
             project_name = dlg.GetPath()
+            print project_name
             self.bm2_manager = open_project(project_name)
-            self.reload_project()
+            self.status = PROJECT_STATUS_CONFIG
+        self.reload_project()
         dlg.Destroy()
 
 
-    def on_run_one_round(self, e):
-        self.bm2_manager.run_one_round()
+    # def on_run_one_round(self, e):
+    #     self.bm2_manager.run_one_round()
 
     def reload_project(self, status_string=''):
         if self.bm2_manager is None:
             self.statusbar.SetStatusText("Please Open / Create project")
             self.SetTitle("Main")
-            self.run_one_round_btn.Disable()
+            self.status=PROJECT_STATUS_NONE
 
         else:
             self.statusbar.SetStatusText(status_string)
             self.SetTitle(self.bm2_manager.config.project_name)
-            self.run_one_round_btn.Enable()
 
-class NewProjectFrame(wx.Dialog):
+        if self.status == PROJECT_STATUS_CONFIG:
+            self.project_status_panel.Show()
+            self.project_status_panel.refresh_ui(self.bm2_manager.config)
+            self.project_running_panel.Hide()
+        elif self.status == PROJECT_STATUS_CONFIG:
+            self.project_status_panel.Hide()
+            self.project_running_panel.Show()
+        else:
+            self.project_status_panel.Hide()
+            self.project_running_panel.Hide()
+
+        self.Layout()
+
+
+
+# In MainFrame: Show project status
+class ProjectStatusPanel(wx.Panel):
     def __init__(self, parent):
-        super(NewProjectFrame, self).__init__(parent=parent)
+        super(ProjectStatusPanel, self).__init__(parent=parent)
+        self.init_ui()
+
+    def init_ui(self):
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        self.st_project_name = wx.StaticText(self, label='Proejct Name')
+        vbox.Add(self.st_project_name, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP)
+
+        self.st_team_count = wx.StaticText(self, label='Team Count')
+        vbox.Add(self.st_team_count, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP)
+
+        self.st_complete_round = wx.StaticText(self, label='Complete Round')
+        vbox.Add(self.st_complete_round, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP)
+
+        self.btn_run_next_round = wx.Button(self, label='Run Next Round', size=(70, 30))
+        vbox.Add(self.btn_run_next_round, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP)
+
+        self.SetSizer(vbox)
+
+    def refresh_ui(self, project_config):
+        project_name = project_config.project_name
+        team_count = project_config.team_count
+        
+        project_scheduler = project_config.get_scheduler()
+        current_round = project_scheduler.current_round
+        is_next_round_available = project_scheduler.is_next_round_available()
+        
+
+        self.st_project_name.SetLabel('Proejct Name: %s' % project_name)
+        self.st_team_count.SetLabel('Team Count: %d' % team_count)
+        self.st_complete_round.SetLabel('Complete Round: %d' % current_round)
+        if is_next_round_available:
+            self.btn_run_next_round.Enable()
+        else:
+            self.btn_run_next_round.Disable()
+
+
+
+# In MainFrame: Show when project is running
+class ProjectRuningPanel(wx.Panel):
+    def __init__(self, parent):
+        pass
+
+    def init_ui(self):
+        pass
+
+
+# 
+class NewProjectDialog(wx.Dialog):
+    def __init__(self, parent):
+        super(NewProjectDialog, self).__init__(parent=parent)
         
         self.on_init()
 
@@ -180,13 +261,16 @@ class NewProjectFrame(wx.Dialog):
                 tm_name="TM", 
                 team_count=v["team_count"], 
                 board_count=v["board_count"], 
-                scheduler_type="CustomScheduler", 
+                scheduler_type="SwissScheduler", 
                 scheduler_metadata={
                     "match":
                     [
                         [ (1, 1, 2), (2, 2, 1) ]  # Round 1 (table_id, ns_team, ew_team)
                     ],
                     "round_count": v["round_count"],
+                    # TODO !!
+                    "matchup_table": [ [0 for i in range(v["team_count"]+1)] for j in range(v["team_count"]+1) ],
+                    "score": [ [x+1,0] for x in range(v["team_count"]) ],
                     "current_round": 0
                 }, 
                 start_board_number=1, 
@@ -238,13 +322,6 @@ class NewProjectFrame(wx.Dialog):
     def get_project_name(self):
         return self.project_name_textctrl.GetValue()
 
-
-class RunFrame(wx.Dialog):
-    def __init__(self, parent):
-        pass
-
-    def init_ui(self):
-        pass
 
 
 class MainApp(wx.App):

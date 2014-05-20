@@ -90,6 +90,8 @@ class SwissScheduler(BaseScheduler):
         self.match = meta_data["match"]
         self.score = meta_data["score"]
         self.matchup_table = meta_data["matchup_table"]
+        self.round_count = meta_data["round_count"]
+        self.current_round = meta_data["current_round"]
 
     def generate_match(self, team_rank, total_team, round_number):
         #print (self.matchup_table)
@@ -189,6 +191,12 @@ class SwissScheduler(BaseScheduler):
             "score": self.score,
             "matchup_table": self.matchup_table
         }
+
+    def is_next_round_available(self):
+        return self.current_round < self.round_count
+
+    def get_current_round(self):
+        return self.current_round
 
     def set_score(self, new_score):
         self.score = new_score
