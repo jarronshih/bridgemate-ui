@@ -11,6 +11,8 @@ Install on Windows
 - win32com python module
 - wxpython python module
 - pyinstaller python module
+- pdfkit python module
+- jinja2 python module
 - Access 2010
 - Bridgemate Controller Software (provide by bridgemate)
 - BM2ServerDriver (provide by bridgemate)
