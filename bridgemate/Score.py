@@ -1,3 +1,106 @@
+def compute_score(board_no, contract, declarer, result):
+    # contract = t c x (t = 1-7, c = C/D/H/S/NT, x = x/xx)
+    #        ex. 1 H
+    #            2 NT
+    #            4 S x
+    #            3 D xx
+    #            PASS
+    # declarer = N E S W
+    # result = -13 ... -1 = +1 ... +6
+
+    # NS win: plus, EW win: minus
+    sign = 0
+    if declarer == 'N' or 'S':
+        sign = 1
+    elif declarer == 'E' or 'W':
+        sign = -1
+    else raise ValueError
+    
+    # Vulnerability: 0 = non-Vul, 1 = Vul
+    vul = 0
+    no = board_no % 16
+    if no == 4 or 7 or 10 or 13:
+        vul = 1
+    elif sign == 1 and no == 2 or 5 or 12 or 15:
+        vul = 1
+    elif sign == -1 and no == 3 or 6 or 9 or 0: # 0 = board 16
+        vul = 1
+	
+    # Parse contract
+    level, suit, penalty = contract.split(' ')
+    
+    # double: 0 = unDbl, 1 = Dbl, 2 = ReDbl
+    double = 0 
+    if penalty == 'x':
+        double = 1
+    elif penalty == 'xx':
+        double = 2
+
+    # Calculate score
+    score = 0 
+    if result == 'PASS':
+        return score
+    
+    if result[0] == '-': # down
+        undertrick = int(result[1:])
+        if double == 0:
+            if vul == 0:
+                score = -50 * undertrick
+            else:
+                score = -100 * undertrick
+        else: # doubled
+            if vul == 0:
+                if undertrick <= 3:
+                    score = (-200 * undertrick + 100) * double
+                else:
+                    score = -500 - (undertrick - 3) * 300
+            else:
+                score = (-300 * undertrick + 100) * double
+
+    else: # make
+        # base score
+        if suit == 'S' or 'H':
+            score = 30 * level
+        elif suit == 'C' or 'D':
+            score = 20 * level
+        elif suit = 'NT':
+            score = 30 * level + 10
+        else raise ValueError
+
+        if double > 0:
+            score = score * double * 2
+        
+        # bonus score
+        if score < 100: # partial
+            score = score + 50
+        else: # game
+            score = score + 300 + 200 * vul
+
+        if level == 6: # small slam
+            score = score + 500 + 250 * vul
+        elif level == 7: # grand slam
+            score = score + 1000 + 500 * vul
+
+        if double > 0: # dbl-make bonus
+            score = score + 50 * double
+
+        # overtrick
+        if result[0] == '+':
+            overtrick = int(result[1:])
+            if double == 0:
+                if suit == 'S' or 'H' or 'NT':
+                    score = score + 30 * overtrick
+                else:
+                    score = score + 20 * overtrick
+            else:
+                score = score + (100 + 100 * vul) * double * overtrick
+        
+    
+    score = score * sign # negate if declared by EW
+    
+    return score
+
+
 def score_to_imp(score_a, score_b):
     imp_tables = [
         #               imp
