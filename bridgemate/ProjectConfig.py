@@ -58,6 +58,36 @@ class ProjectConfig(object):
 
 
 
+# class BCSData(object):
+#     def load_from_dict(self, data_dict):
+#         self.__dict__ = data_dict
 
+class BCSConfig(object):
+    def __init__(self, file_path):
+        self.config_path = file_path
+        self.result_array = []
+        if os.path.exists(self.config_path):
+            self.read()
 
+    def load_from_bcsdata_array(self, data_ary):
+        self.result_array = data_ary
+
+    def get_data_array(self):
+        return self.result_array
+
+    def dump(self):
+        return json.dumps(self.__dict__, indent=4)
+
+    def write(self):
+        json_content = self.dump()
+        f = open(self.config_path, 'w')
+        f.write(json_content)
+        f.close()
+
+    def read(self):
+        f = open(self.config_path)
+        json_content = f.read()
+        f.close()
+
+        self.load(json_content)
         

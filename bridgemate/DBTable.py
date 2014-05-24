@@ -44,7 +44,7 @@ class DBTable(object):
         while not rs.EOF:
             dic = {}
             for f_name, _ in self.colume_types:
-                dic[f_name] = rs.Fields(f_name).value
+                dic[f_name] = str(rs.Fields(f_name).value)
                 # logger.debug("[%s]: %s" % (f_name, dic[f_name]))
             
             array.append(dic)

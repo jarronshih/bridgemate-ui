@@ -53,7 +53,7 @@ class MainFrame(wx.Frame):
         self.project_status_panel = ProjectStatusPanel(self)
 
         # Project Running Panel
-        self.project_running_panel = ProjectStatusPanel(self)
+        self.project_running_panel = ProjectRuningPanel(self)
 
         # Setup Panel
         self.project_status_panel.Hide()
@@ -64,7 +64,7 @@ class MainFrame(wx.Frame):
         self.SetSizer(self.sizer)
 
         self.Bind(wx.EVT_BUTTON, self.on_start_bcs, self.project_status_panel.btn_run_next_round)
-        # self.Bind(wx.EVT_BUTTON, self.on_stop_bcs, self.project_running_panel)
+        self.Bind(wx.EVT_BUTTON, self.on_stop_bcs, self.project_running_panel.btn_stop_bcs)
 
     def on_quit(self, e):
         self.Close()
@@ -95,10 +95,18 @@ class MainFrame(wx.Frame):
 
 
     def on_start_bcs(self, e):
-        pass
+        self.status = PROJECT_STATUS_RUNNING
+        self.bm2_manager.init_bws_file()
+        self.bm2_manager.start_bcs_collect_data()
+
+        self.reload_project()
 
     def on_stop_bcs(self, e):
-        pass
+        self.status = PROJECT_STATUS_CONFIG
+        # TODO 
+        self.bm2_manager.get_bcs_data()
+        self.bm2_manager.end_and_save_config()
+        self.reload_project()
 
     def reload_project(self, status_string=''):
         if self.bm2_manager is None:
@@ -112,10 +120,13 @@ class MainFrame(wx.Frame):
 
         if self.status == PROJECT_STATUS_CONFIG:
             self.project_status_panel.Show()
+            self.bm2_manager.config.read()
             self.project_status_panel.refresh_ui(self.bm2_manager.config)
             self.project_running_panel.Hide()
-        elif self.status == PROJECT_STATUS_CONFIG:
+        elif self.status == PROJECT_STATUS_RUNNING:
             self.project_status_panel.Hide()
+            self.bm2_manager.config.read()
+            self.project_running_panel.refresh_ui(self.bm2_manager.config)
             self.project_running_panel.Show()
         else:
             self.project_status_panel.Hide()
@@ -175,9 +186,14 @@ class ProjectRuningPanel(wx.Panel):
         self.init_ui()
 
     def init_ui(self):
-        pass
+        vbox = wx.BoxSizer(wx.VERTICAL)
 
-    def refresh_ui(self):
+        self.btn_stop_bcs = wx.Button(self, label='Stop', size=(70, 30))
+        vbox.Add(self.btn_stop_bcs, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP)
+
+        self.SetSizer(vbox)
+
+    def refresh_ui(self, config):
         pass
 
 # 

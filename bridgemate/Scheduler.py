@@ -181,6 +181,13 @@ class SwissScheduler(BaseScheduler):
 
         # raise NotImplementedError
 
+    def schedule_next_round(self):
+        if not self.is_next_round_available():
+            raise
+        else:
+            self.current_round = self.current_round + 1
+        self.schedule_round(self.current_round)
+        
     def get_match_by_round(self, current_round):
         # return (tableid, ns_team, ew_team) array
         return self.match[current_round-1]
@@ -189,7 +196,9 @@ class SwissScheduler(BaseScheduler):
         return {
             "match": self.match,
             "score": self.score,
-            "matchup_table": self.matchup_table
+            "matchup_table": self.matchup_table,
+            "round_count": self.round_count,
+            "current_round": self.current_round
         }
 
     def is_next_round_available(self):

@@ -7,7 +7,7 @@ from utils.config import *
 from bridgemate.Scheduler import *
 from bridgemate.BWS import BWS
 from bridgemate.BCSManager import BCSManager
-from bridgemate.ProjectConfig import ProjectConfig
+from bridgemate.ProjectConfig import ProjectConfig, BCSConfig
 
 logger = get_logger()
 
@@ -57,12 +57,17 @@ class BM2Manager(object):
     def get_bcs_data(self):
         # Sync data
         if self.is_bcs_alive():
+            current_round = self.scheduler.get_current_round()
+            bws_path = get_project_file_path(self.project_name, str(current_round) + '.bws')
             bws = BWS(bws_path)
             data_ary = bws.get_recevied_date()
             logger.info("Get Data")
             for data in data_ary:
                 logger.info("Data: %s" % str(data))
-
+            bcs_config_path = get_project_file_path(self.project_name, "round"+str(current_round) + '.json')
+            bcs_config = BCSConfig(bcs_config_path)
+            bcs_config.load_from_bcsdata_array(data_ary)
+            bcs_config.write()
             return data_ary
         else:
             return None
@@ -72,11 +77,12 @@ class BM2Manager(object):
         return self.bcs.is_alive()
 
     def end_and_save_config(self):
-        bcs.close()
-        logger.info("Write config back to json format")
+        logger.info("end and save")
+        self.bcs.close()
         self.config.start_board_number = self.config.start_board_number + self.config.board_count
         self.config.scheduler_metadata = self.scheduler.get_metadata()
         self.config.write()
+        logger.info("Write config back to json format")
 
 
 # Use these function to open project
