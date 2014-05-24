@@ -63,6 +63,9 @@ class MainFrame(wx.Frame):
         self.sizer.Add(self.project_running_panel, 1, wx.EXPAND)
         self.SetSizer(self.sizer)
 
+        self.Bind(wx.EVT_BUTTON, self.on_start_bcs, self.project_status_panel.btn_run_next_round)
+        # self.Bind(wx.EVT_BUTTON, self.on_stop_bcs, self.project_running_panel)
+
     def on_quit(self, e):
         self.Close()
 
@@ -91,8 +94,11 @@ class MainFrame(wx.Frame):
         dlg.Destroy()
 
 
-    # def on_run_one_round(self, e):
-    #     self.bm2_manager.run_one_round()
+    def on_start_bcs(self, e):
+        pass
+
+    def on_stop_bcs(self, e):
+        pass
 
     def reload_project(self, status_string=''):
         if self.bm2_manager is None:
@@ -154,6 +160,7 @@ class ProjectStatusPanel(wx.Panel):
         self.st_project_name.SetLabel('Proejct Name: %s' % project_name)
         self.st_team_count.SetLabel('Team Count: %d' % team_count)
         self.st_complete_round.SetLabel('Complete Round: %d' % current_round)
+        
         if is_next_round_available:
             self.btn_run_next_round.Enable()
         else:
@@ -164,11 +171,14 @@ class ProjectStatusPanel(wx.Panel):
 # In MainFrame: Show when project is running
 class ProjectRuningPanel(wx.Panel):
     def __init__(self, parent):
-        pass
+        super(ProjectRuningPanel, self).__init__(parent=parent)
+        self.init_ui()
 
     def init_ui(self):
         pass
 
+    def refresh_ui(self):
+        pass
 
 # 
 class NewProjectDialog(wx.Dialog):
@@ -263,10 +273,7 @@ class NewProjectDialog(wx.Dialog):
                 board_count=v["board_count"], 
                 scheduler_type="SwissScheduler", 
                 scheduler_metadata={
-                    "match":
-                    [
-                        [ (1, 1, 2), (2, 2, 1) ]  # Round 1 (table_id, ns_team, ew_team)
-                    ],
+                    "match":[],
                     "round_count": v["round_count"],
                     # TODO !!
                     "matchup_table": [ [0 for i in range(v["team_count"]+1)] for j in range(v["team_count"]+1) ],
