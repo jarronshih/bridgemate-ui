@@ -53,7 +53,7 @@ def compute_score(board_no, contract, declarer, result):
                 if undertrick <= 3:
                     score = (-200 * undertrick + 100) * double
                 else:
-                    score = -500 - (undertrick - 3) * 300
+                    score = (-500 - (undertrick - 3) * 300 ) * double
             else:
                 score = (-300 * undertrick + 100) * double
 
