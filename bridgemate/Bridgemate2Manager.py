@@ -35,7 +35,8 @@ class BM2Manager(object):
     def init_bws_file(self):
         logger.info("Init .bws file")
         self.scheduler.schedule_next_round()
-
+        self.config.scheduler_metadata = self.scheduler.get_metadata()
+        self.config.write()
         current_round = self.scheduler.get_current_round()
         bws_path = get_project_file_path(self.project_name, str(current_round) + '.bws')
         bws = BWS(bws_path)

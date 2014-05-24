@@ -65,6 +65,8 @@ class MainFrame(wx.Frame):
 
         self.Bind(wx.EVT_BUTTON, self.on_start_bcs, self.project_status_panel.btn_run_next_round)
         self.Bind(wx.EVT_BUTTON, self.on_stop_bcs, self.project_running_panel.btn_stop_bcs)
+        self.bcs_timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.bcs_timer_callback, self.bcs_timer)
 
     def on_quit(self, e):
         self.Close()
@@ -78,7 +80,6 @@ class MainFrame(wx.Frame):
 
         self.reload_project()
         dlg.Destroy()
-
         
     def on_open(self, e):
         dlg = wx.DirDialog(self, "Choose a directory:",
@@ -98,12 +99,35 @@ class MainFrame(wx.Frame):
         self.status = PROJECT_STATUS_RUNNING
         self.bm2_manager.init_bws_file()
         self.bm2_manager.start_bcs_collect_data()
-
+        self.bcs_timer.Start(10*1000)
         self.reload_project()
+
+    def bcs_timer_callback(self, e):
+        data_ary = self.bm2_manager.get_bcs_data()
+        filter_ary = [(int(x["PairNS"]), int(x["PairEW"], int(x["Board"]))) for x in data_ary]
+        print filter_ary
+        
+        pending_ary = []
+        scheduler = self.bm2_manager.config.get_scheduler()
+        matches = scheduler.get_match_by_round(scheduler.get_current_round())
+        for table, ns_team, ew_team in matches:
+            start_board = self.bm2_manager.config.start_board_number
+            end_board = start_board + self.bm2_manager.config.board_count
+            for board in range(start_board, end_board):
+                if (ns_team, ew_team, board) in filter_ary:
+                    filter_ary.pop((ns_team, ew_team, board))
+                else:
+                    pending_ary.append("Table %d #%d - NS %d - EW %d" % (table, board, ns_team, ew_team))
+
+
+        msg = "Waitng for %d result: \n%s" % (len(pending_ary), '\n'.join(pending_ary))
+        self.project_running_panel.refresh_ui(msg)
+        if len(pending_ary) == 0:
+            self.bcs_timer.Stop()
 
     def on_stop_bcs(self, e):
         self.status = PROJECT_STATUS_CONFIG
-        # TODO 
+        self.bcs_timer.Stop()
         self.bm2_manager.get_bcs_data()
         self.bm2_manager.end_and_save_config()
         self.reload_project()
@@ -126,7 +150,7 @@ class MainFrame(wx.Frame):
         elif self.status == PROJECT_STATUS_RUNNING:
             self.project_status_panel.Hide()
             self.bm2_manager.config.read()
-            self.project_running_panel.refresh_ui(self.bm2_manager.config)
+            self.project_running_panel.refresh_ui("Waiting result...")
             self.project_running_panel.Show()
         else:
             self.project_status_panel.Hide()
@@ -164,7 +188,7 @@ class ProjectStatusPanel(wx.Panel):
         team_count = project_config.team_count
         
         project_scheduler = project_config.get_scheduler()
-        current_round = project_scheduler.current_round
+        current_round = project_scheduler.get_current_round()
         is_next_round_available = project_scheduler.is_next_round_available()
         
 
@@ -184,6 +208,7 @@ class ProjectRuningPanel(wx.Panel):
     def __init__(self, parent):
         super(ProjectRuningPanel, self).__init__(parent=parent)
         self.init_ui()
+        
 
     def init_ui(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
@@ -191,12 +216,15 @@ class ProjectRuningPanel(wx.Panel):
         self.btn_stop_bcs = wx.Button(self, label='Stop', size=(70, 30))
         vbox.Add(self.btn_stop_bcs, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP)
 
+        self.st_msg = wx.StaticText(self, label='Waiting result...')
+        vbox.Add(self.st_msg, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP)
+
         self.SetSizer(vbox)
 
-    def refresh_ui(self, config):
-        pass
+    def refresh_ui(self, msg):
+        self.st_msg.SetLabel(msg)
 
-# 
+
 class NewProjectDialog(wx.Dialog):
     def __init__(self, parent):
         super(NewProjectDialog, self).__init__(parent=parent)
