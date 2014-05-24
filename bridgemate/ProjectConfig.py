@@ -57,11 +57,6 @@ class ProjectConfig(object):
         return scheduler
 
 
-
-# class BCSData(object):
-#     def load_from_dict(self, data_dict):
-#         self.__dict__ = data_dict
-
 class BCSConfig(object):
     def __init__(self, file_path):
         self.config_path = file_path
@@ -78,6 +73,9 @@ class BCSConfig(object):
     def dump(self):
         return json.dumps(self.__dict__, indent=4)
 
+    def load(self, json_content):
+        self.__dict__ = json.loads(json_content)
+        
     def write(self):
         json_content = self.dump()
         f = open(self.config_path, 'w')

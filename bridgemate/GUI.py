@@ -104,9 +104,9 @@ class MainFrame(wx.Frame):
 
     def bcs_timer_callback(self, e):
         data_ary = self.bm2_manager.get_bcs_data()
-        filter_ary = [(int(x["PairNS"]), int(x["PairEW"], int(x["Board"]))) for x in data_ary]
+        filter_ary = [(int(x["PairNS"]), int(x["PairEW"]), int(x["Board"])) for x in data_ary]
         print filter_ary
-        
+
         pending_ary = []
         scheduler = self.bm2_manager.config.get_scheduler()
         matches = scheduler.get_match_by_round(scheduler.get_current_round())
@@ -115,7 +115,7 @@ class MainFrame(wx.Frame):
             end_board = start_board + self.bm2_manager.config.board_count
             for board in range(start_board, end_board):
                 if (ns_team, ew_team, board) in filter_ary:
-                    filter_ary.pop((ns_team, ew_team, board))
+                    filter_ary.remove((ns_team, ew_team, board))
                 else:
                     pending_ary.append("Table %d #%d - NS %d - EW %d" % (table, board, ns_team, ew_team))
 
