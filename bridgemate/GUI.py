@@ -113,14 +113,22 @@ class MainFrame(wx.Frame):
         for table, ns_team, ew_team in matches:
             start_board = self.bm2_manager.config.start_board_number
             end_board = start_board + self.bm2_manager.config.board_count
+            board_array = []
             for board in range(start_board, end_board):
                 if (ns_team, ew_team, board) in filter_ary:
                     filter_ary.remove((ns_team, ew_team, board))
                 else:
-                    pending_ary.append("Table %d #%d - NS %d - EW %d" % (table, board, ns_team, ew_team))
+                    board_array.append(board)
+            if len(board_array) > 0:
+                if table & 1:
+                    table_str = "Open  %d" % int((table+1)/2)
+                else:
+                    table_str = "Close %d" % int(table/2)
+                board_str = ', '.join(map(str, board_array))
+                pending_ary.append("%s - NS %d - EW %d:\t\t%s" % (table_str, ns_team, ew_team, board_str))
 
 
-        msg = "Waitng for %d result: \n%s" % (len(pending_ary), '\n'.join(pending_ary))
+        msg = "Waitng for %d table: \n%s" % (len(pending_ary), '\n'.join(pending_ary))
         self.project_running_panel.refresh_ui(msg)
         if len(pending_ary) == 0:
             self.bcs_timer.Stop()
@@ -130,6 +138,9 @@ class MainFrame(wx.Frame):
         self.bcs_timer.Stop()
         self.bm2_manager.get_bcs_data()
         self.bm2_manager.end_and_save_config()
+
+        # TODO: generate report
+
         self.reload_project()
 
     def reload_project(self, status_string=''):
@@ -319,7 +330,7 @@ class NewProjectDialog(wx.Dialog):
                 scheduler_metadata={
                     "match":[],
                     "round_count": v["round_count"],
-                    # TODO !!
+                    # TODO: init !!
                     "matchup_table": [ [0 for i in range(v["team_count"]+1)] for j in range(v["team_count"]+1) ],
                     "score": [ [x+1,0] for x in range(v["team_count"]) ],
                     "current_round": 0
