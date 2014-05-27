@@ -13,6 +13,7 @@ Install on Windows
 - pyinstaller python module
 - pdfkit python module
 - jinja2 python module
+- wkhtmltopdf, add to $PATH
 - Access 2010
 - Bridgemate Controller Software (provide by bridgemate)
 - BM2ServerDriver (provide by bridgemate)
