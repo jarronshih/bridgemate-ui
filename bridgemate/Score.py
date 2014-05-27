@@ -10,38 +10,47 @@ def compute_score(board_no, contract, declarer, result):
 
     # NS win: plus, EW win: minus
     sign = 0
-    if declarer == 'N' or 'S':
+    if declarer == 'N' or declarer == 'S':
         sign = 1
-    elif declarer == 'E' or 'W':
+    elif declarer == 'E' or declarer == 'W':
         sign = -1
-    else raise ValueError
+    else :
+        raise ValueError    
     
     # Vulnerability: 0 = non-Vul, 1 = Vul
     vul = 0
-    no = board_no % 16
-    if no == 4 or 7 or 10 or 13:
+    no = int(board_no % 16)
+    if no == 4 or no == 7 or no == 10 or no == 13:
         vul = 1
-    elif sign == 1 and no == 2 or 5 or 12 or 15:
+    elif sign == 1 and (no == 2 or no == 5 or no == 12 or no == 15):
         vul = 1
-    elif sign == -1 and no == 3 or 6 or 9 or 0: # 0 = board 16
+    elif sign == -1 and (no == 3 or no == 6 or no == 9 or no == 0): # 0 = board 16
         vul = 1
 	
     # Parse contract
-    level, suit, penalty = contract.split(' ')
+    splited_contract = contract.split(' ')
+    level = splited_contract[0]
+    suit = splited_contract[1]
+    if len(splited_contract) == 3:
+        penalty = splited_contract[2]
+    else:
+        penalty = ""
+    #print (level, suit, penalty)
     
     # double: 0 = unDbl, 1 = Dbl, 2 = ReDbl
     double = 0 
-    if penalty == 'x':
+    if penalty == "x":
         double = 1
-    elif penalty == 'xx':
+    elif penalty == "xx":
         double = 2
+    #print ("sign = %d vul = %d double = %d" % (sign, vul, double) )
 
     # Calculate score
     score = 0 
-    if result == 'PASS':
+    if result == "PASS":
         return score
     
-    if result[0] == '-': # down
+    if result[0] == "-": # down
         undertrick = int(result[1:])
         if double == 0:
             if vul == 0:
@@ -59,26 +68,29 @@ def compute_score(board_no, contract, declarer, result):
 
     else: # make
         # base score
-        if suit == 'S' or 'H':
-            score = 30 * level
-        elif suit == 'C' or 'D':
-            score = 20 * level
-        elif suit = 'NT':
-            score = 30 * level + 10
-        else raise ValueError
+        if suit == "S" or suit == "H":
+            score = int(30) * int(level)
+        elif suit == "C" or suit == "D":
+            score = int(20) * int(level)
+        elif suit == "NT":
+            score = int(30) * int(level) + int(10)
+        else :
+            raise ValueError
+        #print ("base score = %d" % (score))
 
         if double > 0:
-            score = score * double * 2
+            score = int(score * double * 2)
         
         # bonus score
-        if score < 100: # partial
-            score = score + 50
+        if int(score) < 100: # partial
+            score = int(score) + 50
         else: # game
-            score = score + 300 + 200 * vul
+            score = int(score) + 300 + 200 * vul
+        #print ("bonus score = %d" % (score))
 
-        if level == 6: # small slam
+        if int(level) == 6: # small slam
             score = score + 500 + 250 * vul
-        elif level == 7: # grand slam
+        elif int(level) == 7: # grand slam
             score = score + 1000 + 500 * vul
 
         if double > 0: # dbl-make bonus
@@ -149,6 +161,6 @@ def imp_to_vp(imp_diff, board_count):
     vp = round(max(min(vp, 2*v0),0), 2)
 
     if imp_diff >= 0:
-        return vp, round(2*v0-vp, 2)
+        return vp#, round(2*v0-vp, 2)
     else:
-        return round(2*v0-vp, 2), vp
+        return round(2*v0-vp, 2)#, vp
