@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    </head>
+
+    <body>
+        <h1 class="text-center">{{ team_a }}  vs  {{ team_b }}</h1>
+        <h2 class="text-center">{{ vp_a }} : {{ vp_b }}</h2>
+        <table class="table table-bordered">
+        <tr>
+        <th></th>
+        <th colspan="2">Results</th>
+        <th colspan="2">NS Score</th>
+        <th colspan="2">Score diff</th>
+        <th colspan="2">IMP</th>
+        </tr>
+        <tr>
+        <th>#</th>
+        <th>Open</th>
+        <th>Close</th>
+        <th>Open</th>
+        <th>Close</th>
+        <th>{{ team_a }}</th>
+        <th>{{ team_b }}</th>
+        <th>{{ team_a }}</th>
+        <th>{{ team_b }}</th>
+        </tr>
+
+        {%- for board in boards %}
+        <tr>
+        <td>{{ board.board_num }}</td>
+        <td>{{ board.open_contract }}</td>
+        <td>{{ board.close_contract }}</td>
+        <td>{{ board.open_score }}</td>
+        <td>{{ board.close_score }}</td>
+        <td>{{ board.team_a_score_diff }}</td>
+        <td>{{ board.team_b_score_diff }}</td>
+        <td>{{ board.team_a_imp }}</td>
+        <td>{{ board.team_b_imp }}</td>
+        </tr>
+        {%- endfor %}
+
+        <tr>
+        <th colspan="7">Sum</th>
+        <th>{{ imp_a }}</th>
+        <th>{{ imp_b }}</th>
+        </tr>
+        <tr>
+        <th colspan="7">Carry</th>
+        <th></th>
+        <th></th>
+        </tr>
+        <tr>
+        <th colspan="7">Total</th>
+        <th>{{ vp_a }}</th>
+        <th>{{ vp_b }}</th>
+        </tr>
+        </table>
+    </body>
+</html>

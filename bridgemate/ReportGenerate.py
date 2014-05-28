@@ -2,7 +2,8 @@ import unittest
 from jinja2 import Template
 import pdfkit
 import os
-from Score import *
+from bridgemate.Score import *
+from utils.config import SWISS_SCORE_TEMPLATE_PATH
 
 
 def result_to_dict(result_array, team_count, board_count):
@@ -88,62 +89,10 @@ def result_to_dict(result_array, team_count, board_count):
     return overall_result, vp_table
 
 def result_dict_to_html(result_dict, output_file):
-    HTML_TEMPLATE="""
-
-<h1>{{ team_a }}  vs  {{ team_b }}</h1>
-<h2>{{ vp_a }} : {{ vp_b }}</h2>
-<table>
-<tr>
-<th></th>
-<th colspan="2">Results</th>
-<th colspan="2">NS Score</th>
-<th colspan="2">Score diff</th>
-<th colspan="2">IMP</th>
-</tr>
-<tr>
-<th>#</th>
-<th>Open</th>
-<th>Close</th>
-<th>Open</th>
-<th>Close</th>
-<th>{{ team_a }}</th>
-<th>{{ team_b }}</th>
-<th>{{ team_a }}</th>
-<th>{{ team_b }}</th>
-</tr>
-
-{%- for board in boards %}
-<tr>
-<td>{{ board.board_num }}</td>
-<td>{{ board.open_contract }}</td>
-<td>{{ board.close_contract }}</td>
-<td>{{ board.open_score }}</td>
-<td>{{ board.close_score }}</td>
-<td>{{ board.team_a_score_diff }}</td>
-<td>{{ board.team_b_score_diff }}</td>
-<td>{{ board.team_a_imp }}</td>
-<td>{{ board.team_b_imp }}</td>
-</tr>
-{%- endfor %}
-
-<tr>
-<th colspan="7">Sum</th>
-<th>{{ imp_a }}</th>
-<th>{{ imp_b }}</th>
-</tr>
-<tr>
-<th colspan="7">Carry</th>
-<th></th>
-<th></th>
-</tr>
-<tr>
-<th colspan="7">Total</th>
-<th>{{ vp_a }}</th>
-<th>{{ vp_b }}</th>
-</tr>
-</table>
-    """
-    tmpl = Template(HTML_TEMPLATE)
+    f = open(SWISS_SCORE_TEMPLATE_PATH, "r")
+    tmp_html = f.read()
+    f.close()
+    tmpl = Template(tmp_html)
     html = tmpl.render(result_dict)
     f = open(output_file, "w")
     f.write(html)
