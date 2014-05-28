@@ -138,6 +138,41 @@ def result_data_process(result_array, team_count, board_count, pdf_file, round_n
     html_files_to_pdf(html_files, pdf_file)
     return vps
 
+def match_table_process(matches, team_count, round_number, scores, pdf_file):
+    team_dict_ary = []
+    for i in range(team_count):
+        team_number = i + 1
+        match =  [ x for x in matches if x[1]==team_number][0]
+        opp_team = match[2]
+        table = int((match[0]+1)/2)
+        score = [ x[1] for x in scores if x[0] == team_number][0]
+        rank = ""
+        team_dict = {
+            "team_number": team_number,
+            "opp_team": opp_team,
+            "table": table,
+            "score": score,
+            "rank": rank
+        }
+        team_dict_ary.append(team_dict)
+
+    tmpl = Template(tmp_html)
+    html = tmpl.render(result_dict)
+
+    options = {
+        'page-size': 'A4',
+        'margin-top': '20mm',
+        'margin-right': '20mm',
+        'margin-bottom': '20mm',
+        'margin-left': '20mm',
+        'encoding': "UTF-8",
+        'grayscale': None,
+        'outline-depth':3,
+        # 'footer-center':'[page]',
+        'footer-line': None,
+    }
+    pdfkit.from_string(html, pdf_file, options=options)
+
 
 class IMPVPGenerationTest(unittest.TestCase):
     def test_from_sample_input(self):

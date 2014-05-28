@@ -210,7 +210,8 @@ class SwissScheduler(BaseScheduler):
     def set_score(self, new_score):
         self.score = new_score
 
-    
+    def get_scores(self):
+        return self.score
                     
 
 

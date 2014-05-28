@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    </head>
+
+    <body>
+        <h1 class="text-center">Round {{round}}</h1>
+        <table class="table table-bordered text-center" style="font-size:20px;" >
+            <thead>
+                <tr>
+                <td>#</td>
+                <td>VS</td>
+                <td>Table</td>
+                <td>VP</td>
+                <td>Rank</td>
+                </tr>
+            </thead>
+            <tbody>
+                {%- for team in teams %}
+                <tr>
+                <td>{{ team.team_number }}</td>
+                <td>{{ team.opp_team }}</td>
+                <td>{{ team.table }}</td>
+                <td>{{ team.score }}</td>
+                <td>{{ team.rank }}</td>
+                </tr>
+                {%- endfor %}
+            </tbody>
+        </table>
+    </body> 
+</html>

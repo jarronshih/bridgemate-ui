@@ -98,6 +98,8 @@ class MainFrame(wx.Frame):
     def on_start_bcs(self, e):
         self.status = PROJECT_STATUS_RUNNING
         self.bm2_manager.init_bws_file()
+        scheduler = self.bm2_manager.get_scheduler()
+        match_table_process(self.bm2_manager.config.matches, self.bm2_manager.config.team_count, scheduler.get_current_round(), scheduler.get_scores(), "Match"+scheduler.get_current_round()+".pdf")
         self.bm2_manager.start_bcs_collect_data()
         self.bcs_timer.Start(10*1000)
         self.reload_project()
