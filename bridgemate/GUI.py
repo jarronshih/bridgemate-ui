@@ -1,5 +1,6 @@
 import wx
 from bridgemate.Bridgemate2Manager import *
+from ReportGenerate import *
 from utils.config import PROJECT_FOLDER
 
 MAINFRAME_HEIGHT=400
@@ -136,11 +137,17 @@ class MainFrame(wx.Frame):
     def on_stop_bcs(self, e):
         self.status = PROJECT_STATUS_CONFIG
         self.bcs_timer.Stop()
-        self.bm2_manager.get_bcs_data()
+        
+        # generate report
+        data_ary = self.bm2_manager.get_bcs_data()
+        scheduler = self.bm2_manager.config.get_scheduler()
+        current_round = scheduler.get_current_round()
+        pdf_file_name = "Round " + str(current_round) + ".pdf"
+        vps = result_data_process(data_ary, self.bm2_manager.config.team_count, self.bm2_manager.config.board_count, pdf_file_name)
+        scheduler.set_score(vps)
+
         self.bm2_manager.end_and_save_config()
-
-        # TODO: generate report
-
+        
         self.reload_project()
 
     def reload_project(self, status_string=''):
