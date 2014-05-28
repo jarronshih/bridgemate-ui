@@ -6,7 +6,7 @@ from bridgemate.Score import *
 from utils.config import SWISS_SCORE_TEMPLATE_PATH
 
 
-def result_to_dict(result_array, team_count, board_count):
+def result_to_dict(result_array, team_count, board_count, round_number):
     match_count = int(team_count / 2)
     vp_table = [ [i+1, 0] for i in range(team_count)]
 
@@ -28,7 +28,8 @@ def result_to_dict(result_array, team_count, board_count):
         "imp_a" : 0,
         "imp_b" : 0,
         "vp_a" : 0.0,
-        "vp_b" : 0.0
+        "vp_b" : 0.0,
+        "round_number": round_number
     } for k in range(match_count)]
 
     for array_elt in result_array:    
@@ -54,7 +55,7 @@ def result_to_dict(result_array, team_count, board_count):
                                 match["team_b"] = ew_team
                             elif match["team_b"] != ew_team :
                                 raise TeamNumberConflictException
-                            board["open_contract"] = contract + result
+                            board["open_contract"] = contract + " " + declarer + " " + result
                             board["open_score"] = ns_score
                         else :
                             if match["team_a"] == 0 :
@@ -65,7 +66,7 @@ def result_to_dict(result_array, team_count, board_count):
                                 match["team_b"] = ns_team
                             elif match["team_b"] != ns_team :
                                 raise TeamNumberConflictException
-                            board["close_contract"] = contract + result
+                            board["close_contract"] = contract + " " + declarer + " " + result
                             board["close_score"] = ns_score
 
     for match in overall_result:
@@ -74,7 +75,7 @@ def result_to_dict(result_array, team_count, board_count):
             ns_imp = score_to_imp(board["open_score"], board["close_score"])
             score_diff = board["open_score"] - board["close_score"]
             board["team_a_score_diff"] = score_diff if score_diff > 0 else 0
-            board["team_b_score_diff"] = score_diff if score_diff < 0 else 0
+            board["team_b_score_diff"] = 0 if score_diff > 0 else -score_diff
             board["team_a_imp"] = ns_imp if ns_imp > 0 else 0
             board["team_b_imp"] = 0 if ns_imp > 0 else -ns_imp
             match["imp_a"] = match["imp_a"] + board["team_a_imp"]
@@ -117,14 +118,14 @@ def html_files_to_pdf(html_files, output_file):
 
 
 
-def result_data_process(result_array, team_count, board_count, pdf_file):
+def result_data_process(result_array, team_count, board_count, pdf_file, round_number):
     output_folder = "output"
     if os.path.exists(output_folder):
         import shutil
         shutil.rmtree(output_folder)
     os.makedirs(output_folder)
 
-    result_dict_array, vps = result_to_dict(result_array, team_count, board_count)
+    result_dict_array, vps = result_to_dict(result_array, team_count, board_count, round_number)
     # gen html
     html_files = []
 

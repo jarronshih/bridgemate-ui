@@ -1,6 +1,6 @@
 import wx
 from bridgemate.Bridgemate2Manager import *
-from ReportGenerate import *
+from bridgemate.ReportGenerate import *
 from utils.config import PROJECT_FOLDER
 
 MAINFRAME_HEIGHT=400
@@ -89,7 +89,6 @@ class MainFrame(wx.Frame):
         dlg.SetPath(PROJECT_FOLDER)
         if dlg.ShowModal() == wx.ID_OK:
             project_name = dlg.GetPath()
-            print project_name
             self.bm2_manager = open_project(project_name)
             self.status = PROJECT_STATUS_CONFIG
         self.reload_project()
@@ -120,6 +119,7 @@ class MainFrame(wx.Frame):
                     filter_ary.remove((ns_team, ew_team, board))
                 else:
                     board_array.append(board)
+
             if len(board_array) > 0:
                 if table & 1:
                     table_str = "Open  %d" % int((table+1)/2)
@@ -131,6 +131,8 @@ class MainFrame(wx.Frame):
 
         msg = "Waitng for %d table: \n%s" % (len(pending_ary), '\n'.join(pending_ary))
         self.project_running_panel.refresh_ui(msg)
+        self.Layout()
+
         if len(pending_ary) == 0:
             self.bcs_timer.Stop()
 
@@ -143,8 +145,17 @@ class MainFrame(wx.Frame):
         scheduler = self.bm2_manager.config.get_scheduler()
         current_round = scheduler.get_current_round()
         pdf_file_name = "Round " + str(current_round) + ".pdf"
-        vps = result_data_process(data_ary, self.bm2_manager.config.team_count, self.bm2_manager.config.board_count, pdf_file_name)
-        scheduler.set_score(vps)
+        vps = result_data_process(data_ary, self.bm2_manager.config.team_count, self.bm2_manager.config.board_count, pdf_file_name, current_round)
+        
+        # parse score
+        total_vps = []
+        for score in self.bm2_manager.scheduler.score:
+            for t, s in vps:
+                if t == score[0]:
+                    new_score = s
+            total_score = (score[0], score[1] + new_score)
+            total_vps.append(total_score)
+        self.bm2_manager.scheduler.score = total_vps
 
         self.bm2_manager.end_and_save_config()
         

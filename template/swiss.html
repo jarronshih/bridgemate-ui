@@ -6,11 +6,12 @@
     </head>
 
     <body>
+        <h1>Table: {{match_no}}  Round: {{round_number}}</h1>
         <h1 class="text-center" style="font-size:60px;">{{ team_a }}  vs  {{ team_b }}</h1>
         <h2 class="text-center" style="font-size:40px;">{{ vp_a }} : {{ vp_b }}</h2>
         <br>
 
-        <table class="table table-bordered" style="font-size:22px;">
+        <table class="table table-bordered" style="font-size:20px;">
             <thead>
                 <tr>
                 <th></th>
@@ -38,12 +39,12 @@
                 <td class="text-center">{{ board.board_num }}</td>
                 <td>{{ board.open_contract }}</td>
                 <td>{{ board.close_contract }}</td>
-                <td class="text-center">{{ board.open_score }}</td>
-                <td class="text-center">{{ board.close_score }}</td>
-                <td class="text-center">{{ board.team_a_score_diff }}</td>
-                <td class="text-center">{{ board.team_b_score_diff }}</td>
-                <td class="text-center">{{ board.team_a_imp }}</td>
-                <td class="text-center">{{ board.team_b_imp }}</td>
+                <td {% if board.open_score < 0 %}class="text-right"{% endif%}>{{ board.open_score }}</td>
+                <td {% if board.close_score < 0 %}class="text-right"{% endif%}>{{ board.close_score }}</td>
+                <td class="text-center">{% if board.team_a_score_diff > 0 %}{{ board.team_a_score_diff }}{% endif%}</td>
+                <td class="text-center">{% if board.team_b_score_diff > 0 %}{{ board.team_b_score_diff }}{% endif%}</td>
+                <td class="text-center">{% if board.team_a_imp > 0 %}{{ board.team_a_imp }}{% endif%}</td>
+                <td class="text-center">{% if board.team_b_imp > 0 %}{{ board.team_b_imp }}{% endif%}</td>
                 </tr>
                 {%- endfor %}
 
