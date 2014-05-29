@@ -3,7 +3,7 @@ from jinja2 import Template
 import pdfkit
 import os
 from bridgemate.Score import *
-from utils.config import SWISS_SCORE_TEMPLATE_PATH
+from utils.config import SWISS_SCORE_TEMPLATE_PATH, SEAT_MATCH_TEMPLATE_PATH
 
 
 def result_to_dict(result_array, team_count, board_count, round_number):
@@ -155,9 +155,11 @@ def match_table_process(matches, team_count, round_number, scores, pdf_file):
             "rank": rank
         }
         team_dict_ary.append(team_dict)
-
+    f = open(SEAT_MATCH_TEMPLATE_PATH, "r")
+    tmp_html = f.read()
+    f.close()
     tmpl = Template(tmp_html)
-    html = tmpl.render(result_dict)
+    html = tmpl.render({"teams":team_dict_ary, "round":round_number })
 
     options = {
         'page-size': 'A4',
