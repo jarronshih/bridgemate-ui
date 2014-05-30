@@ -102,7 +102,7 @@ class MainFrame(wx.Frame):
         current_round = scheduler.get_current_round()
         match_table_process(scheduler.get_match_by_round(current_round), self.bm2_manager.config.team_count, current_round, scheduler.get_scores(), "Match%d.pdf" % current_round)
         self.bm2_manager.start_bcs_collect_data()
-        self.bcs_timer.Start(10*1000)
+        self.bcs_timer.Start(60*1000)
         self.reload_project()
 
     def bcs_timer_callback(self, e):
@@ -110,8 +110,14 @@ class MainFrame(wx.Frame):
         filter_ary = [(int(x["PairNS"]), int(x["PairEW"]), int(x["Board"])) for x in data_ary]
         print filter_ary
 
-        pending_ary = []
+        # generate report
         scheduler = self.bm2_manager.config.get_scheduler()
+        current_round = scheduler.get_current_round()
+        pdf_file_name = "Round " + str(current_round) + ".pdf"
+        result_data_process(data_ary, self.bm2_manager.config.team_count, self.bm2_manager.config.board_count, pdf_file_name, current_round)
+
+        pending_ary = []
+        #scheduler = self.bm2_manager.config.get_scheduler()
         matches = scheduler.get_match_by_round(scheduler.get_current_round())
         for table, ns_team, ew_team in matches:
             start_board = self.bm2_manager.config.start_board_number
