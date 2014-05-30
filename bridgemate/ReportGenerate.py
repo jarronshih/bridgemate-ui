@@ -6,14 +6,16 @@ from bridgemate.Score import *
 from utils.config import SWISS_SCORE_TEMPLATE_PATH, SEAT_MATCH_TEMPLATE_PATH
 
 
-def result_to_dict(result_array, team_count, board_count, round_number):
+def result_to_dict(result_array, team_count, start_board, board_count, round_number):
     match_count = int(team_count / 2)
     vp_table = [ [i+1, 0] for i in range(team_count)]
 
     overall_result = [{
         "match_no": k+1,
+        "match_finished" : 0,
         "boards" : [ {
-            "board_num" : i + 1, 
+            "board_num" : i + start_board, 
+            "board_played" : 0,
             "open_contract" : "",
             "close_contract" : "", 
             "open_score" : 0, 
@@ -44,6 +46,7 @@ def result_to_dict(result_array, team_count, board_count, round_number):
         #print ("table %d board %d: %d vs. %d, %s %s %s, NS score %d" % (table_no, board_no, ns_team, ew_team, contract, declarer, result, ns_score) )
         for match in overall_result:
             if match["match_no"] == int((table_no+1) / 2) :
+                match["match_finished"] = 1
                 for board in match["boards"]:
                     if board["board_num"] == board_no :# found the corresponding match and board
                         if table_no % 2 == 1 : #open room: ns_team = team_a, ew_team = team_b
@@ -57,6 +60,7 @@ def result_to_dict(result_array, team_count, board_count, round_number):
                                 raise TeamNumberConflictException
                             board["open_contract"] = contract + " " + declarer + " " + result
                             board["open_score"] = ns_score
+                            board["board_played"] = board["board_played"] + 1   # 1 table has played this board
                         else :
                             if match["team_a"] == 0 :
                                 match["team_a"] = ew_team
@@ -68,6 +72,9 @@ def result_to_dict(result_array, team_count, board_count, round_number):
                                 raise TeamNumberConflictException
                             board["close_contract"] = contract + " " + declarer + " " + result
                             board["close_score"] = ns_score
+                            board["board_played"] = board["board_played"] + 1   # 1 table has played this board
+                    if board["board_played"] != 2:
+                        match["match_finished"] = 0
 
     for match in overall_result:
         #print ("match %d: team %d vs team %d" % (match["match_no"], match["team_a"], match["team_b"]) )
@@ -118,24 +125,32 @@ def html_files_to_pdf(html_files, output_file):
 
 
 
-def result_data_process(result_array, team_count, board_count, pdf_file, round_number):
-    output_folder = "output"
-    if os.path.exists(output_folder):
-        import shutil
-        shutil.rmtree(output_folder)
-    os.makedirs(output_folder)
+def result_data_process(result_array, team_count, start_board, board_count, pdf_file, round_number, project_path):
+    output_folder = project_path + "/output"
+    if not os.path.exists(output_folder):
+        #import shutil
+        #shutil.rmtree(output_folder)
+        os.makedirs(output_folder)    
 
-    result_dict_array, vps = result_to_dict(result_array, team_count, board_count, round_number)
-    # gen html
-    html_files = []
-
+    result_dict_array, vps = result_to_dict(result_array, team_count, start_board, board_count, round_number)
+    
+    # gen html   
     for result_dict in result_dict_array:
-        file_name = output_folder + "/" + str(len(html_files)+1) + ".html"
+        html_files = []
+        file_name = output_folder + "/" + str(result_dict["match_no"]) + ".html"
+        print file_name
+        pdf_file_name = project_path + "/" + pdf_file + " Table " + str(result_dict["match_no"]) + ".pdf"
+        print pdf_file_name
         html_files.append(file_name)
         result_dict_to_html(result_dict, file_name)
+        if (result_dict["match_finished"] == 1):
+            print "Round %d Table %d has finished" % (round_number, result_dict["match_no"])
+            if not os.path.exists(pdf_file_name):    # match is finished && pdf has not yet generated            
+                print "Round %d Table %d finished but pdf has not yet generated" % (round_number, result_dict["match_no"])
+                html_files_to_pdf(html_files, pdf_file_name)
 
     # gen pdf
-    html_files_to_pdf(html_files, pdf_file)
+    #html_files_to_pdf(html_files, pdf_file)
     return vps
 
 def match_table_process(matches, team_count, round_number, scores, pdf_file):

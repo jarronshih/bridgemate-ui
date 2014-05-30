@@ -96,11 +96,18 @@ class MainFrame(wx.Frame):
 
 
     def on_start_bcs(self, e):
+        # renew the output directiry
+        output_folder = get_project_folder(self.bm2_manager.project_name) + "/output"
+        if os.path.exists(output_folder):
+            import shutil
+            shutil.rmtree(output_folder)
+        os.makedirs(output_folder)
+
         self.status = PROJECT_STATUS_RUNNING
         self.bm2_manager.init_bws_file()
         scheduler = self.bm2_manager.config.get_scheduler()
         current_round = scheduler.get_current_round()
-        match_table_process(scheduler.get_match_by_round(current_round), self.bm2_manager.config.team_count, current_round, scheduler.get_scores(), "Match%d.pdf" % current_round)
+        match_table_process(scheduler.get_match_by_round(current_round), self.bm2_manager.config.team_count, current_round, scheduler.get_scores(), get_project_folder(self.bm2_manager.project_name) + "/Match%d.pdf" % current_round)
         self.bm2_manager.start_bcs_collect_data()
         self.bcs_timer.Start(60*1000)
         self.reload_project()
@@ -113,8 +120,8 @@ class MainFrame(wx.Frame):
         # generate report
         scheduler = self.bm2_manager.config.get_scheduler()
         current_round = scheduler.get_current_round()
-        pdf_file_name = "Round " + str(current_round) + ".pdf"
-        result_data_process(data_ary, self.bm2_manager.config.team_count, self.bm2_manager.config.board_count, pdf_file_name, current_round)
+        pdf_file_name = "Round " + str(current_round)
+        result_data_process(data_ary, self.bm2_manager.config.team_count, self.bm2_manager.config.start_board_number, self.bm2_manager.config.board_count, pdf_file_name, current_round, get_project_folder(self.bm2_manager.project_name))
 
         pending_ary = []
         #scheduler = self.bm2_manager.config.get_scheduler()
@@ -153,8 +160,8 @@ class MainFrame(wx.Frame):
         data_ary = self.bm2_manager.get_bcs_data()
         scheduler = self.bm2_manager.config.get_scheduler()
         current_round = scheduler.get_current_round()
-        pdf_file_name = "Round " + str(current_round) + ".pdf"
-        vps = result_data_process(data_ary, self.bm2_manager.config.team_count, self.bm2_manager.config.board_count, pdf_file_name, current_round)
+        pdf_file_name = "Round " + str(current_round)
+        vps = result_data_process(data_ary, self.bm2_manager.config.team_count, self.bm2_manager.config.start_board_number, self.bm2_manager.config.board_count, pdf_file_name, current_round, get_project_folder(self.bm2_manager.project_name))
         
         # parse score
         total_vps = []
