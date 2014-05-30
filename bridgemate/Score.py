@@ -27,6 +27,10 @@ def compute_score(board_no, contract, declarer, result):
     elif sign == -1 and (no == 3 or no == 6 or no == 9 or no == 0): # 0 = board 16
         vul = 1
 	
+    score = 0
+    if contract == "PASS":
+        return score
+    
     # Parse contract
     splited_contract = contract.split(' ')
     level = splited_contract[0]
@@ -45,10 +49,7 @@ def compute_score(board_no, contract, declarer, result):
         double = 2
     #print ("sign = %d vul = %d double = %d" % (sign, vul, double) )
 
-    # Calculate score
-    score = 0 
-    if result == "PASS":
-        return score
+    # Calculate score 
     
     if result[0] == "-": # down
         undertrick = int(result[1:])

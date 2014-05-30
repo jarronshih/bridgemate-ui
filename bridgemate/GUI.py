@@ -121,7 +121,7 @@ class MainFrame(wx.Frame):
         scheduler = self.bm2_manager.config.get_scheduler()
         current_round = scheduler.get_current_round()
         pdf_file_name = "Round " + str(current_round)
-        result_data_process(data_ary, self.bm2_manager.config.team_count, self.bm2_manager.config.start_board_number, self.bm2_manager.config.board_count, pdf_file_name, current_round, get_project_folder(self.bm2_manager.project_name))
+        result_data_process(data_ary, self.bm2_manager.config.team_count, self.bm2_manager.config.start_board_number, self.bm2_manager.config.board_count, pdf_file_name, current_round, get_project_folder(self.bm2_manager.project_name), 0)
 
         pending_ary = []
         #scheduler = self.bm2_manager.config.get_scheduler()
@@ -161,7 +161,7 @@ class MainFrame(wx.Frame):
         scheduler = self.bm2_manager.config.get_scheduler()
         current_round = scheduler.get_current_round()
         pdf_file_name = "Round " + str(current_round)
-        vps = result_data_process(data_ary, self.bm2_manager.config.team_count, self.bm2_manager.config.start_board_number, self.bm2_manager.config.board_count, pdf_file_name, current_round, get_project_folder(self.bm2_manager.project_name))
+        vps = result_data_process(data_ary, self.bm2_manager.config.team_count, self.bm2_manager.config.start_board_number, self.bm2_manager.config.board_count, pdf_file_name, current_round, get_project_folder(self.bm2_manager.project_name), 1)
         
         # parse score
         total_vps = []

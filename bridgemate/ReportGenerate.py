@@ -125,7 +125,7 @@ def html_files_to_pdf(html_files, output_file):
 
 
 
-def result_data_process(result_array, team_count, start_board, board_count, pdf_file, round_number, project_path):
+def result_data_process(result_array, team_count, start_board, board_count, pdf_file, round_number, project_path, match_finished):
     output_folder = project_path + "/output"
     if not os.path.exists(output_folder):
         #import shutil
@@ -139,15 +139,18 @@ def result_data_process(result_array, team_count, start_board, board_count, pdf_
         html_files = []
         file_name = output_folder + "/" + str(result_dict["match_no"]) + ".html"
         print file_name
-        pdf_file_name = project_path + "/" + pdf_file + " Table " + str(result_dict["match_no"]) + ".pdf"
+        pdf_file_name = project_path + "/" + pdf_file + " Table " + str(result_dict["match_no"]) + "- " + str(result_dict["team_a"]) + " vs " + str(result_dict["team_b"]) + ".pdf"
         print pdf_file_name
         html_files.append(file_name)
         result_dict_to_html(result_dict, file_name)
-        if (result_dict["match_finished"] == 1):
-            print "Round %d Table %d has finished" % (round_number, result_dict["match_no"])
-            if not os.path.exists(pdf_file_name):    # match is finished && pdf has not yet generated            
-                print "Round %d Table %d finished but pdf has not yet generated" % (round_number, result_dict["match_no"])
-                html_files_to_pdf(html_files, pdf_file_name)
+        if match_finished == 1:
+            html_files_to_pdf(html_files, pdf_file_name)
+        else :
+            if (result_dict["match_finished"] == 1):
+                print "Round %d Table %d has finished" % (round_number, result_dict["match_no"])
+                if not os.path.exists(pdf_file_name):    # match is finished && pdf has not yet generated            
+                    print "Round %d Table %d finished but pdf has not yet generated" % (round_number, result_dict["match_no"])
+                    html_files_to_pdf(html_files, pdf_file_name)
 
     # gen pdf
     #html_files_to_pdf(html_files, pdf_file)
