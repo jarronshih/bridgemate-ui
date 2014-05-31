@@ -100,7 +100,7 @@ def compute_score(board_no, contract, declarer, result):
         if result[0] == '+':
             overtrick = int(result[1:])
             if double == 0:
-                if suit == 'S' or 'H' or 'NT':
+                if suit == 'S' or suit == 'H' or  suit == 'NT':
                     score = score + 30 * overtrick
                 else:
                     score = score + 20 * overtrick
