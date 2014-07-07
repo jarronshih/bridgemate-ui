@@ -1,4 +1,5 @@
 import wx
+import wx.grid
 from bridgemate.Bridgemate2Manager import *
 from bridgemate.ReportGenerate import *
 from utils.config import PROJECT_FOLDER
@@ -18,7 +19,7 @@ class MainFrame(wx.Frame):
         super(MainFrame, self).__init__(
             parent=None, 
             id=ID_MAINFRAME, 
-            style= wx.CAPTION | wx.SYSTEM_MENU  | wx.MINIMIZE_BOX | wx.CLOSE_BOX | wx.STAY_ON_TOP,
+            style= wx.CAPTION | wx.SYSTEM_MENU  | wx.MINIMIZE_BOX | wx.CLOSE_BOX,
             )
         self.bm2_manager = None
         self.init_UI()
@@ -84,7 +85,7 @@ class MainFrame(wx.Frame):
         
     def on_open(self, e):
         dlg = wx.DirDialog(self, "Choose a directory:",
-                           style=wx.DD_DEFAULT_STYLE
+                           style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST
                            )
         dlg.SetPath(PROJECT_FOLDER)
         if dlg.ShowModal() == wx.ID_OK:
@@ -127,10 +128,10 @@ class MainFrame(wx.Frame):
         #scheduler = self.bm2_manager.config.get_scheduler()
         matches = scheduler.get_match_by_round(scheduler.get_current_round())
         for table, ns_team, ew_team in matches:
-            start_board = self.bm2_manager.config.start_board_number
-            end_board = start_board + self.bm2_manager.config.board_count
+            start_board_number = self.bm2_manager.config.start_board_number
+            end_board = start_board_number + self.bm2_manager.config.board_count
             board_array = []
-            for board in range(start_board, end_board):
+            for board in range(start_board_number, end_board):
                 if (ns_team, ew_team, board) in filter_ary:
                     filter_ary.remove((ns_team, ew_team, board))
                 else:
@@ -223,29 +224,60 @@ class ProjectStatusPanel(wx.Panel):
         self.st_complete_round = wx.StaticText(self, label='Complete Round')
         vbox.Add(self.st_complete_round, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP)
 
+        self.st_starting_board_number = wx.StaticText(self, label='Starting Board')
+        vbox.Add(self.st_starting_board_number, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP)
+
+        self.btn_edit_starting_board_number = wx.Button(self, label='Edit Starting Board', size=(70, 30))
+        vbox.Add(self.btn_edit_starting_board_number, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP)
+        self.Bind(wx.EVT_BUTTON, self.on_edit_starting_board_number, self.btn_edit_starting_board_number)
+
+        self.btn_score_detail = wx.Button(self, label='Score', size=(70, 30))
+        vbox.Add(self.btn_score_detail, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP)
+        self.Bind(wx.EVT_BUTTON, self.on_score_detail, self.btn_score_detail)
+
         self.btn_run_next_round = wx.Button(self, label='Run Next Round', size=(70, 30))
         vbox.Add(self.btn_run_next_round, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP)
 
+
         self.SetSizer(vbox)
 
-    def refresh_ui(self, project_config):
+    def refresh_ui(self, project_config=None):
+        if project_config is None:
+            project_config = self.config
         project_name = project_config.project_name
         team_count = project_config.team_count
+        start_board_number = project_config.start_board_number
         
         project_scheduler = project_config.get_scheduler()
         current_round = project_scheduler.get_current_round()
         is_next_round_available = project_scheduler.is_next_round_available()
-        
 
         self.st_project_name.SetLabel('Proejct Name: %s' % project_name)
         self.st_team_count.SetLabel('Team Count: %d' % team_count)
         self.st_complete_round.SetLabel('Complete Round: %d' % current_round)
+        self.st_starting_board_number.SetLabel('Starting Board: %d' % start_board_number)
         
         if is_next_round_available:
             self.btn_run_next_round.Enable()
         else:
             self.btn_run_next_round.Disable()
 
+        self.btn_edit_starting_board_number.Enable()
+
+        self.config = project_config
+
+    def on_edit_starting_board_number(self, e):
+        dialog = wx.NumberEntryDialog(parent=self, message='Enter starting board number', prompt='', caption='', value=1, min=1, max=1000)
+        res = dialog.ShowModal()
+        if res == wx.ID_OK:
+            value = int(dialog.GetValue())
+            self.config.start_board_number = value
+            self.refresh_ui()
+        dialog.Destroy()
+
+    def on_score_detail(self, e):
+        frame = ScoreTableFrame(None, self.config)
+        frame.Show(True)
 
 
 # In MainFrame: Show when project is running
@@ -268,6 +300,58 @@ class ProjectRuningPanel(wx.Panel):
 
     def refresh_ui(self, msg):
         self.st_msg.SetLabel(msg)
+
+
+
+
+class ScoreTableFrame(wx.Frame):
+    def __init__(self, parent, config):
+        wx.Frame.__init__(self, parent, -1, "Score",
+                size=(275, 275))
+        grid = wx.grid.Grid(self)
+        table = ScoreTable(config)
+        grid.SetTable(table)
+
+
+class ScoreTable(wx.grid.PyGridTableBase):
+    def __init__(self, config):
+        wx.grid.PyGridTableBase.__init__(self)
+        self.config = config
+    def GetNumberRows(self):
+        """Return the number of rows in the grid"""
+        return len(self.config.scheduler_metadata["score"])
+
+    def GetNumberCols(self):
+        """Return the number of columns in the grid"""
+        return 1
+
+    def IsEmptyCell(self, row, col):
+        """Return True if the cell is empty"""
+        return False
+
+    def GetTypeName(self, row, col):
+        """Return the name of the data type of the value in the cell"""
+        return None
+
+    def GetValue(self, row, col):
+        """Return the value of a cell"""
+        for team_number, score in self.config.scheduler_metadata["score"]:
+            if team_number == row + 1:
+                return score
+
+    def SetValue(self, row, col, value):
+        """Set the value of a cell"""
+        if value.isdigit():
+            meta = self.config.scheduler_metadata
+            scores = []
+            for team_number, score in self.config.scheduler_metadata["score"]:
+                if team_number == row + 1:
+                    scores.append([team_number, int(value)])
+                else:
+                    scores.append([team_number, score])
+            meta["score"] = scores
+            self.config.scheduler_metadata = meta
+
 
 
 class NewProjectDialog(wx.Dialog):
