@@ -112,6 +112,17 @@ class BWS(object):
             sql = RoundDataTable().get_insert_sql(fields)
             mdb.execute(sql)
 
+        # Setting fill
+        #fields = [
+        #    (SETTINGS_SHOWRESULTS, "0"),
+        #    (SETTINGS_SHOWOWNRESULT, "1"),
+        #    (SETTINGS_SHOWPERCENTAGE, "0"),
+        #    (SETTINGS_GROUPSECTIONS, "0"),
+        #    (SETTINGS_BM2AUTOSHOWSCORERECAP, "1")
+        #]
+        #sql = SettingsTable().get_insert_sql(fields)
+        #mdb.execute(sql)
+
         mdb.close()
 
 

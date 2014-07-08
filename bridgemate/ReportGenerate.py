@@ -156,22 +156,31 @@ def result_data_process(result_array, team_count, start_board, board_count, pdf_
     #html_files_to_pdf(html_files, pdf_file)
     return vps
 
-def match_table_process(matches, team_count, round_number, scores, pdf_file):
+def match_table_process(matches, team_count, round_number, scores, round_scores, pdf_file):
     team_dict_ary = []
     for i in range(team_count):
         team_number = i + 1
-        match =  [ x for x in matches if x[1]==team_number][0]
-        opp_team = match[2]
-        table = int((match[0]+1)/2)
-        score = [ x[1] for x in scores if x[0] == team_number][0]
+        total_score = [ x[1] for x in scores if x[0] == team_number ][0]
         rank = ""
         team_dict = {
             "team_number": team_number,
-            "opp_team": opp_team,
-            "table": table,
-            "score": score,
+            "rounds": [],
+            "total_score": total_score,
             "rank": rank
         }
+        for j in range(round_number):
+            round_match = matches[j]
+            current_round_score = round_scores[j]
+            match = [ x for x in round_match if x[1] == team_number ][0]
+            opp_team = match[2]
+            table = int((match[0]+1)/2)
+            score = [ x[1] for x in current_round_score if x[0] == team_number ][0]
+            rnd_score_entry = {
+                "opp_team": opp_team,
+                "table": table,
+                "score": score
+            }
+            team_dict.rounds.append(rnd_score_entry)
         team_dict_ary.append(team_dict)
     f = open(SEAT_MATCH_TEMPLATE_PATH, "r")
     tmp_html = f.read()
@@ -181,6 +190,7 @@ def match_table_process(matches, team_count, round_number, scores, pdf_file):
 
     options = {
         'page-size': 'A4',
+        'orientation': 'Landscape',
         'margin-top': '20mm',
         'margin-right': '20mm',
         'margin-bottom': '20mm',

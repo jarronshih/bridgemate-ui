@@ -89,6 +89,7 @@ class SwissScheduler(BaseScheduler):
     def __init__(self, meta_data):
         self.match = meta_data["match"]
         self.score = meta_data["score"]
+        self.round_score = meta_data["round_score"]
         self.matchup_table = meta_data["matchup_table"]
         self.round_count = meta_data["round_count"]
         self.current_round = meta_data["current_round"]
@@ -192,10 +193,14 @@ class SwissScheduler(BaseScheduler):
         # return (tableid, ns_team, ew_team) array
         return self.match[current_round-1]
 
+    def get_match(self):
+        return self.match
+
     def get_metadata(self):
         return {
             "match": self.match,
             "score": self.score,
+            "round_score": self.round_score,
             "matchup_table": self.matchup_table,
             "round_count": self.round_count,
             "current_round": self.current_round
@@ -210,8 +215,14 @@ class SwissScheduler(BaseScheduler):
     def set_score(self, new_score):
         self.score = new_score
 
+    def append_score(self, score_by_round):
+        self.round_score.append(score_by_round)
+
     def get_scores(self):
         return self.score
+
+    def get_round_scores(self):
+        return self.round_score
                     
 
 

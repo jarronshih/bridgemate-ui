@@ -11,9 +11,12 @@
             <thead>
                 <tr>
                 <td>#</td>
-                <td>VS</td>
-                <td>Table</td>
-                <td>VP</td>
+                {%- for r in range[round] %}
+                <td>R{{r+1}} VS</td>
+                <td>R{{r+1}} Table</td>
+                <td>R{{r+1}} VP</td>
+                {%- endfor %}
+                <td>Sum</td>
                 <td>Rank</td>
                 </tr>
             </thead>
@@ -21,9 +24,12 @@
                 {%- for team in teams %}
                 <tr>
                 <td>{{ team.team_number }}</td>
-                <td>{{ team.opp_team }}</td>
-                <td>{{ team.table }}</td>
-                <td>{{ team.score }}</td>
+                    {%- for rnd in team.rounds %}
+                    <td>{{ rnd.opp_team }}</td>
+                    <td>{{ rnd.table }}</td>
+                    <td>{{ rnd.score }}</td>                    
+                    {%- endfor %}
+                <td>{{ team.total_score }}</td>
                 <td>{{ team.rank }}</td>
                 </tr>
                 {%- endfor %}

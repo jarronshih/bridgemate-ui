@@ -108,7 +108,7 @@ class MainFrame(wx.Frame):
         self.bm2_manager.init_bws_file()
         scheduler = self.bm2_manager.config.get_scheduler()
         current_round = scheduler.get_current_round()
-        match_table_process(scheduler.get_match_by_round(current_round), self.bm2_manager.config.team_count, current_round, scheduler.get_scores(), get_project_folder(self.bm2_manager.project_name) + "/Match%d.pdf" % current_round)
+        match_table_process(scheduler.get_match(), self.bm2_manager.config.team_count, current_round, scheduler.get_scores(), scheduler.get_round_scores(), get_project_folder(self.bm2_manager.project_name) + "/Match%d.pdf" % current_round)
         self.bm2_manager.start_bcs_collect_data()
         self.bcs_timer.Start(60*1000)
         self.reload_project()
@@ -173,6 +173,7 @@ class MainFrame(wx.Frame):
             total_score = (score[0], score[1] + new_score)
             total_vps.append(total_score)
         self.bm2_manager.scheduler.score = total_vps
+        self.bm2_manager.scheduler.append_score(vps)
 
         self.bm2_manager.end_and_save_config()
         
@@ -451,6 +452,7 @@ class NewProjectDialog(wx.Dialog):
                     # TODO: init !!
                     "matchup_table": [ [0 for i in range(v["team_count"]+1)] for j in range(v["team_count"]+1) ],
                     "score": [ [x+1,0] for x in range(v["team_count"]) ],
+                    "round_score": [],
                     "current_round": 0
                 }, 
                 start_board_number=1, 
