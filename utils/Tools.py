@@ -15,3 +15,10 @@ def get_project_file_path(project_name, file_name):
 def ask_user_input(question, default=None):
     ret = raw_input(question) or default
     return ret
+
+def isanum(str):
+    try:
+        float(str);
+        return True;
+    except ValueError:
+        return False;

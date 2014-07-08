@@ -3,6 +3,7 @@ import wx.grid
 from bridgemate.Bridgemate2Manager import *
 from bridgemate.ReportGenerate import *
 from utils.config import PROJECT_FOLDER
+from utils.Tools import isanum
 
 MAINFRAME_HEIGHT=400
 MAINFRAME_WIDTH=600
@@ -345,12 +346,15 @@ class ScoreTable(wx.grid.PyGridTableBase):
 
     def SetValue(self, row, col, value):
         """Set the value of a cell"""
-        if value.isdigit():
+        #if value.isdigit():
+        #if isinstance(value, int) or isinstance(value, float):
+        #if type(eval(value)) == int or type(eval(value)) == float:
+        if isanum(value):
             meta = self.config.scheduler_metadata
             scores = []
             for team_number, score in self.config.scheduler_metadata["score"]:
                 if team_number == row + 1:
-                    scores.append([team_number, int(value)])
+                    scores.append([team_number, float(value)])
                 else:
                     scores.append([team_number, score])
             meta["score"] = scores
