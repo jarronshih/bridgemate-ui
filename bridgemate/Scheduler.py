@@ -89,7 +89,10 @@ class SwissScheduler(BaseScheduler):
     def __init__(self, meta_data):
         self.match = meta_data["match"]
         self.score = meta_data["score"]
-        self.round_score = meta_data["round_score"]
+        if "round_score" in meta_data.keys()    :
+            self.round_score = meta_data["round_score"]
+        else:
+            self.round_score = []
         self.matchup_table = meta_data["matchup_table"]
         self.round_count = meta_data["round_count"]
         self.current_round = meta_data["current_round"]
