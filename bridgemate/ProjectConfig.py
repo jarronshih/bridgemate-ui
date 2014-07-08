@@ -80,7 +80,7 @@ class ProjectConfig(ConfigFile):
         return scheduler
 
 
-class BCSConfig(object):
+class BCSConfig(ConfigFile):
     def __init__(self, file_path):
         super(BCSConfig, self).__init__(file_path)
         if not "result_array" in self.keys():
