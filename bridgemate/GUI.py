@@ -346,16 +346,16 @@ class ScoreTable(wx.grid.PyGridTableBase):
     def SetValue(self, row, col, value):
         """Set the value of a cell"""
         if value.isdigit():
-            #meta = self.config.scheduler_metadata
+            meta = self.config.scheduler_metadata
             scores = []
             for team_number, score in self.config.scheduler_metadata["score"]:
                 if team_number == row + 1:
                     scores.append([team_number, int(value)])
                 else:
                     scores.append([team_number, score])
-            #meta["score"] = scores
-            #self.config.scheduler_metadata = meta
-            self.config.scheduler_metadata["score"] = scores
+            meta["score"] = scores
+            self.config.scheduler_metadata = meta
+            #self.config.scheduler_metadata["score"] = scores
 
 
 
