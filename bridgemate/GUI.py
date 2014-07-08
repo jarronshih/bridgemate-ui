@@ -268,7 +268,7 @@ class ProjectStatusPanel(wx.Panel):
         self.config = project_config
 
     def on_edit_starting_board_number(self, e):
-        dialog = wx.NumberEntryDialog(parent=self, message='Enter starting board number', prompt='', caption='', value=1, min=1, max=1000)
+        dialog = wx.NumberEntryDialog(parent=self, message='Enter starting board number', prompt='', caption='', value=self.config.start_board_number, min=1, max=1000)
         res = dialog.ShowModal()
         if res == wx.ID_OK:
             value = int(dialog.GetValue())
@@ -277,6 +277,7 @@ class ProjectStatusPanel(wx.Panel):
         dialog.Destroy()
 
     def on_score_detail(self, e):
+        #self.config.scheduler_metadata = self.scheduler.get_metadata()
         frame = ScoreTableFrame(None, self.config)
         frame.Show(True)
 
@@ -318,6 +319,7 @@ class ScoreTable(wx.grid.PyGridTableBase):
     def __init__(self, config):
         wx.grid.PyGridTableBase.__init__(self)
         self.config = config
+
     def GetNumberRows(self):
         """Return the number of rows in the grid"""
         return len(self.config.scheduler_metadata["score"])
@@ -336,6 +338,7 @@ class ScoreTable(wx.grid.PyGridTableBase):
 
     def GetValue(self, row, col):
         """Return the value of a cell"""
+        #self.config.scheduler_metadata = self.scheduler.get_metadata()
         for team_number, score in self.config.scheduler_metadata["score"]:
             if team_number == row + 1:
                 return score
@@ -343,15 +346,16 @@ class ScoreTable(wx.grid.PyGridTableBase):
     def SetValue(self, row, col, value):
         """Set the value of a cell"""
         if value.isdigit():
-            meta = self.config.scheduler_metadata
+            #meta = self.config.scheduler_metadata
             scores = []
             for team_number, score in self.config.scheduler_metadata["score"]:
                 if team_number == row + 1:
                     scores.append([team_number, int(value)])
                 else:
                     scores.append([team_number, score])
-            meta["score"] = scores
-            self.config.scheduler_metadata = meta
+            #meta["score"] = scores
+            #self.config.scheduler_metadata = meta
+            self.config.scheduler_metadata["score"] = scores
 
 
 

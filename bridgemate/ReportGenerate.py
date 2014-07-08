@@ -169,24 +169,32 @@ def match_table_process(matches, team_count, round_number, scores, round_scores,
             "rank": rank
         }
         for j in range(round_number):
-            round_match = matches[j]
-            current_round_score = round_scores[j]
+            round_match = matches[j]            
             match = [ x for x in round_match if x[1] == team_number ][0]
             opp_team = match[2]
             table = int((match[0]+1)/2)
-            score = [ x[1] for x in current_round_score if x[0] == team_number ][0]
-            rnd_score_entry = {
-                "opp_team": opp_team,
-                "table": table,
-                "score": score
-            }
-            team_dict.rounds.append(rnd_score_entry)
+            if j == round_number - 1:
+                rnd_score_entry = {
+                    "opp_team": opp_team,
+                    "table": table,
+                    "score": 0
+                }
+            else:
+                current_round_score = round_scores[j]
+                score = [ x[1] for x in current_round_score if x[0] == team_number ][0]
+                rnd_score_entry = {
+                    "opp_team": opp_team,
+                    "table": table,
+                    "score": score
+                }
+            team_dict["rounds"].append(rnd_score_entry)
         team_dict_ary.append(team_dict)
     f = open(SEAT_MATCH_TEMPLATE_PATH, "r")
     tmp_html = f.read()
     f.close()
     tmpl = Template(tmp_html)
-    html = tmpl.render({"teams":team_dict_ary, "round":round_number })
+    round_number_counts = [ x+1 for x in range(round_number)]
+    html = tmpl.render({"teams":team_dict_ary, "round":round_number, "round_numbers":round_number_counts })
 
     options = {
         'page-size': 'A4',

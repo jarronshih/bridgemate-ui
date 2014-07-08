@@ -11,12 +11,12 @@
             <thead>
                 <tr>
                 <td>#</td>
-                {%- for r in range[round] %}
-                <td>R{{r+1}} VS</td>
-                <td>R{{r+1}} Table</td>
-                <td>R{{r+1}} VP</td>
+                {%- for r in round_numbers %}
+                <td>R{{r}} VS</td>
+                <td>R{{r}} Table</td>
+                <td>R{{r}} VP</td>
                 {%- endfor %}
-                <td>Sum</td>
+                <td>Total (Include Adjustment)</td>
                 <td>Rank</td>
                 </tr>
             </thead>

@@ -34,6 +34,7 @@ class BM2Manager(object):
 
     def init_bws_file(self):
         logger.info("Init .bws file")
+        self.scheduler.set_score(self.config.scheduler_metadata["score"])
         self.scheduler.schedule_next_round()
         self.config.scheduler_metadata = self.scheduler.get_metadata()
         self.config.write()
