@@ -109,7 +109,7 @@ class MainFrame(wx.Frame):
         self.bm2_manager.init_bws_file()
         scheduler = self.bm2_manager.config.get_scheduler()
         current_round = scheduler.get_current_round()
-        match_table_process(scheduler.get_match(), self.bm2_manager.config.team_count, current_round, scheduler.get_scores(), scheduler.get_round_scores(), get_project_folder(self.bm2_manager.project_name) + "/Match%d.pdf" % current_round)
+        match_table_process(scheduler.get_match(), self.bm2_manager.config.team_count, current_round, scheduler.get_scores(), scheduler.get_round_scores(), self.bm2_manager.config.adjustment, get_project_folder(self.bm2_manager.project_name) + "/Match%d.pdf" % current_round)
         self.bm2_manager.start_bcs_collect_data()
         self.bcs_timer.Start(60*1000)
         self.reload_project()
@@ -327,7 +327,7 @@ class ScoreTable(wx.grid.PyGridTableBase):
 
     def GetNumberCols(self):
         """Return the number of columns in the grid"""
-        return 1
+        return 2
 
     def IsEmptyCell(self, row, col):
         """Return True if the cell is empty"""
@@ -339,27 +339,51 @@ class ScoreTable(wx.grid.PyGridTableBase):
 
     def GetValue(self, row, col):
         """Return the value of a cell"""
-        #self.config.scheduler_metadata = self.scheduler.get_metadata()
-        for team_number, score in self.config.scheduler_metadata["score"]:
-            if team_number == row + 1:
-                return score
+        if col == 0:    #score in the previous round
+            if len(self.config.scheduler_metadata["round_score"]) == 0:     #no rounds are played
+                for team_number, score in self.config.scheduler_metadata["score"]:
+                    if team_number == row + 1:
+                        return score
+            else:
+                for team_number, score in self.config.scheduler_metadata["round_score"][len(self.config.scheduler_metadata["round_score"])-1]:
+                    if team_number == row + 1:
+                        return score
+        else:           #adjustment
+            for team_number, score in self.config.adjustment:
+                if team_number == row + 1:
+                    return score
 
     def SetValue(self, row, col, value):
         """Set the value of a cell"""
-        #if value.isdigit():
-        #if isinstance(value, int) or isinstance(value, float):
-        #if type(eval(value)) == int or type(eval(value)) == float:
-        if isanum(value):
-            meta = self.config.scheduler_metadata
-            scores = []
-            for team_number, score in self.config.scheduler_metadata["score"]:
-                if team_number == row + 1:
-                    scores.append([team_number, float(value)])
+        if isanum(value):            
+            if col == 0:
+                meta = self.config.scheduler_metadata
+                scores = []
+                if len(self.config.scheduler_metadata["round_score"]) == 0:     #no rounds are played
+                    for team_number, score in self.config.scheduler_metadata["score"]:
+                        if team_number == row + 1:
+                            scores.append([team_number, float(value)])
+                        else:
+                            scores.append([team_number, score])
+                    meta["score"] = scores                    
                 else:
-                    scores.append([team_number, score])
-            meta["score"] = scores
-            self.config.scheduler_metadata = meta
-            #self.config.scheduler_metadata["score"] = scores
+                    for team_number, score in self.config.scheduler_metadata["round_score"][len(self.config.scheduler_metadata["round_score"])-1]:
+                        if team_number == row + 1:
+                            scores.append([team_number, float(value)])
+                        else:
+                            scores.append([team_number, score])
+                    meta["round_score"][len(self.config.scheduler_metadata["round_score"])-1] = scores
+                self.config.scheduler_metadata = meta    
+            else:
+                adjs = self.config.adjustment
+                adj = []
+                for team_number, score in self.config.adjustment:
+                    if team_number == row + 1:
+                        adj.append([team_number, float(value)])
+                    else:
+                        adj.append([team_number, score])
+                adjs = adj
+                self.config.adjustment = adjs
 
 
 
@@ -463,6 +487,7 @@ class NewProjectDialog(wx.Dialog):
                     "round_score": [],
                     "current_round": 0
                 }, 
+                adjustment =[ [x+1, 0.0] for x in range(v["team_count"]) ],
                 start_board_number=1, 
                 section_id=1, 
                 section_letter='A'

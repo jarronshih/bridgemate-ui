@@ -156,17 +156,23 @@ def result_data_process(result_array, team_count, start_board, board_count, pdf_
     #html_files_to_pdf(html_files, pdf_file)
     return vps
 
-def match_table_process(matches, team_count, round_number, scores, round_scores, pdf_file):
+def match_table_process(matches, team_count, round_number, scores, round_scores, adjustment, pdf_file):
     team_dict_ary = []
     for i in range(team_count):
         team_number = i + 1
         total_score = [ x[1] for x in scores if x[0] == team_number ][0]
-        rank = ""
+        team_adjustment = [ x[1] for x in adjustment if x[0] == team_number ][0]
+        adjusted_score = total_score + team_adjustment
+        #rank = ""
         team_dict = {
             "team_number": team_number,
             "rounds": [],
-            "total_score": total_score,
-            "rank": rank
+            "score": total_score,
+            "opp_team": 0,
+            "table": 0,
+            "adjustment": team_adjustment,
+            "adjusted_score": adjusted_score
+            #"rank": rank
         }
         for j in range(round_number):
             round_match = matches[j]            
@@ -174,11 +180,8 @@ def match_table_process(matches, team_count, round_number, scores, round_scores,
             opp_team = match[2]
             table = int((match[0]+1)/2)
             if j == round_number - 1:
-                rnd_score_entry = {
-                    "opp_team": opp_team,
-                    "table": table,
-                    "score": 0
-                }
+                team_dict["opp_team"] = opp_team
+                team_dict["table"] = table
             else:
                 current_round_score = round_scores[j]
                 score = [ x[1] for x in current_round_score if x[0] == team_number ][0]
@@ -187,13 +190,16 @@ def match_table_process(matches, team_count, round_number, scores, round_scores,
                     "table": table,
                     "score": score
                 }
-            team_dict["rounds"].append(rnd_score_entry)
+                team_dict["rounds"].append(rnd_score_entry)
         team_dict_ary.append(team_dict)
     f = open(SEAT_MATCH_TEMPLATE_PATH, "r")
     tmp_html = f.read()
     f.close()
     tmpl = Template(tmp_html)
-    round_number_counts = [ x+1 for x in range(round_number)]
+    if round_number == 1:
+        round_number_counts = []
+    else:
+        round_number_counts = [ x+1 for x in range(round_number-1)]
     html = tmpl.render({"teams":team_dict_ary, "round":round_number, "round_numbers":round_number_counts })
 
     options = {

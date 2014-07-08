@@ -13,11 +13,14 @@
                 <td>#</td>
                 {%- for r in round_numbers %}
                 <td>R{{r}} VS</td>
-                <td>R{{r}} Table</td>
-                <td>R{{r}} VP</td>
+                <td>Table</td>
+                <td>VP</td>
                 {%- endfor %}
-                <td>Total (Include Adjustment)</td>
-                <td>Rank</td>
+                <td>Sum</td>
+                <td>R{{round}} VS</td>
+                <td>Table</td>
+                <td>Adjustment</td>
+                <td>Adjusted Score</td>
                 </tr>
             </thead>
             <tbody>
@@ -29,8 +32,11 @@
                     <td>{{ rnd.table }}</td>
                     <td>{{ rnd.score }}</td>                    
                     {%- endfor %}
-                <td>{{ team.total_score }}</td>
-                <td>{{ team.rank }}</td>
+                <td>{{ team.score }}</td>
+                <td>{{ team.opp_team }}</td>
+                <td>{{ team.table }}</td>
+                <td>{{ team.adjustment }}</td>
+                <td>{{ team.adjusted_score }}</td>
                 </tr>
                 {%- endfor %}
             </tbody>

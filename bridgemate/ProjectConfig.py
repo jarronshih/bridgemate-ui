@@ -58,15 +58,16 @@ class ProjectConfig(ConfigFile):
         # first init
         if not "project_name" in self.keys():
             self.project_name = project_name
-            self.setup('TM', 0, 8, "CustomScheduler", {"match":[], "round_count":0, "current_round":0}, 1, 1, 'A')
+            self.setup('TM', 0, 8, "CustomScheduler", {"match":[], "round_count":0, "current_round":0}, [], 1, 1, 'A')
 
-    def setup(self, tm_name, team_count, board_count, scheduler_type, scheduler_metadata, start_board_number, section_id, section_letter):
+    def setup(self, tm_name, team_count, board_count, scheduler_type, scheduler_metadata, adjustment, start_board_number, section_id, section_letter):
         self.tm_name = tm_name
         self.team_count = team_count
         self.board_count = board_count
 
         self.scheduler_type = scheduler_type
         self.scheduler_metadata = scheduler_metadata
+        self.adjustment = adjustment
 
         self.start_board_number = start_board_number
 

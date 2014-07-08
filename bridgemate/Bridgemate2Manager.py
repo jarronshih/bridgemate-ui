@@ -28,13 +28,26 @@ class BM2Manager(object):
         self.scheduler = self.config.get_scheduler()
         self.bcs = None
 
-    def setup_config(self, tm_name, team_count, board_count, scheduler_type, scheduler_metadata, start_board_number, section_id, section_letter):
-        self.config.setup(tm_name, team_count, board_count, scheduler_type, scheduler_metadata, start_board_number, section_id, section_letter)
+    def setup_config(self, tm_name, team_count, board_count, scheduler_type, scheduler_metadata, adjustment, start_board_number, section_id, section_letter):
+        self.config.setup(tm_name, team_count, board_count, scheduler_type, scheduler_metadata, adjustment, start_board_number, section_id, section_letter)
         self.scheduler = self.config.get_scheduler()
 
     def init_bws_file(self):
         logger.info("Init .bws file")
-        self.scheduler.set_score(self.config.scheduler_metadata["score"])
+        complete_round = self.scheduler.get_current_round()
+        if complete_round > 0:
+            total_score = []
+            for team in range(self.config.team_count):
+                score = [team+1, 0.0]
+                for rnd_score in self.config.scheduler_metadata["round_score"]:
+                    for t, s in rnd_score:
+                        if t == score[0]:
+                            score[1] = score[1] + s
+                total_score.append(score)
+            self.scheduler.set_score(total_score)
+            self.scheduler.round_score = self.config.scheduler_metadata["round_score"]
+        else:
+            self.scheduler.set_score(self.config.scheduler_metadata["score"])
         self.scheduler.schedule_next_round()
         self.config.scheduler_metadata = self.scheduler.get_metadata()
         self.config.write()
