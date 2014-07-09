@@ -66,6 +66,7 @@ class MainFrame(wx.Frame):
         self.sizer.Add(self.project_running_panel, 1, wx.EXPAND)
         self.SetSizer(self.sizer)
 
+        self.Bind(wx.EVT_BUTTON, self.on_generate_final_score, self.project_status_panel.btn_generate_final_result)
         self.Bind(wx.EVT_BUTTON, self.on_generate_schedule, self.project_status_panel.btn_schedule_next_round)
         self.Bind(wx.EVT_BUTTON, self.on_start_bcs, self.project_status_panel.btn_run_next_round)
         self.Bind(wx.EVT_BUTTON, self.on_stop_bcs, self.project_running_panel.btn_stop_bcs)
@@ -101,6 +102,27 @@ class MainFrame(wx.Frame):
         self.bm2_manager.schedule_next_round()
         frame = MatchTableFrame(None, self.bm2_manager.config)
         frame.Show(True)
+        self.project_status_panel.btn_run_next_round.Enable()
+        self.project_status_panel.btn_score_detail.Disable()
+
+    def on_generate_final_score(self, e):
+        # update final score if the score of the last round is changed manually
+        total_score = []
+        for team in range(self.bm2_manager.config.team_count):
+            score = [team+1, 0.0]
+            for rnd_score in self.bm2_manager.config.scheduler_metadata["round_score"]:
+                for t, s in rnd_score:
+                    if t == score[0]:
+                        score[1] = score[1] + s
+            total_score.append(score)
+        self.bm2_manager.scheduler.set_score(total_score)
+        self.bm2_manager.scheduler.round_score = self.bm2_manager.config.scheduler_metadata["round_score"]
+
+        # generate final score
+        scheduler = self.bm2_manager.config.get_scheduler()
+        generate_final_score(scheduler.get_match(), self.bm2_manager.config.team_count, scheduler.get_current_round(), scheduler.get_scores(), scheduler.get_round_scores(), self.bm2_manager.config.adjustment, get_project_folder(self.bm2_manager.project_name) + "/Final_Score.pdf")
+        #self.project_status_panel.btn_score_detail.Disable()
+        #self.project_status_panel.btn_generate_final_result.Disable()
 
     def on_start_bcs(self, e):
         # renew the output directiry
@@ -201,6 +223,7 @@ class MainFrame(wx.Frame):
             self.project_status_panel.Show()
             self.bm2_manager.config.read()
             self.project_status_panel.refresh_ui(self.bm2_manager.config)
+            self.project_status_panel.btn_run_next_round.Disable()
             self.project_running_panel.Hide()
         elif self.status == PROJECT_STATUS_RUNNING:
             self.project_status_panel.Hide()
@@ -250,6 +273,8 @@ class ProjectStatusPanel(wx.Panel):
         self.btn_run_next_round = wx.Button(self, label='Run Next Round', size=(70, 30))
         vbox.Add(self.btn_run_next_round, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP)
 
+        self.btn_generate_final_result = wx.Button(self, label='Generate Final Result', size=(70, 30))
+        vbox.Add(self.btn_generate_final_result, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP)
 
         self.SetSizer(vbox)
 
@@ -270,11 +295,13 @@ class ProjectStatusPanel(wx.Panel):
         self.st_starting_board_number.SetLabel('Starting Board: %d' % start_board_number)
         
         if is_next_round_available:
-            self.btn_run_next_round.Enable()
+            self.btn_schedule_next_round.Enable()
+            self.btn_edit_starting_board_number.Enable()
+            self.btn_generate_final_result.Hide()
         else:
-            self.btn_run_next_round.Disable()
-
-        self.btn_edit_starting_board_number.Enable()
+            self.btn_schedule_next_round.Disable()
+            self.btn_edit_starting_board_number.Disable()
+            self.btn_generate_final_result.Show()        
 
         self.config = project_config
 

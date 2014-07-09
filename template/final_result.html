@@ -6,7 +6,7 @@
     </head>
 
     <body>
-        <h1 class="text-center">Round {{round}}</h1>
+        <h1 class="text-center">Final Score</h1>
         <table class="table table-bordered text-center" style="font-size:20px;" >
             <thead>
                 <tr>
@@ -17,8 +17,6 @@
                 <td>VP</td>
                 {%- endfor %}
                 <td>Sum</td>
-                <td>R{{round}} VS</td>
-                <td>Table</td>
                 <td>Adjustment</td>
                 <td>Adjusted Score</td>
                 <td>Rank</td>
@@ -34,8 +32,6 @@
                     <td>{{ rnd.score }}</td>                    
                     {%- endfor %}
                 <td>{{ team.score }}</td>
-                <td>{{ team.opp_team }}</td>
-                <td>{{ team.table }}</td>
                 <td>{{ team.adjustment }}</td>
                 <td>{{ team.adjusted_score }}</td>
                 <td>{{ team.rank }}</td>

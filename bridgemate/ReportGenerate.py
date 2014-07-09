@@ -4,7 +4,7 @@ from operator import itemgetter
 import pdfkit
 import os
 from bridgemate.Score import *
-from utils.config import SWISS_SCORE_TEMPLATE_PATH, SEAT_MATCH_TEMPLATE_PATH, BOARD_RECORD_TEMPLATE_PATH
+from utils.config import SWISS_SCORE_TEMPLATE_PATH, SEAT_MATCH_TEMPLATE_PATH, BOARD_RECORD_TEMPLATE_PATH, FINAL_SCORE_TEMPLATE_PATH
 
 def result_to_record(result_array):
     board_record_ary = []
@@ -209,6 +209,66 @@ def result_data_process(result_array, team_count, start_board, board_count, pdf_
     #html_files_to_pdf(html_files, pdf_file)
     return vps
 
+def generate_final_score(matches, team_count, round_number, scores, round_scores, adjustment, pdf_file):
+    team_dict_ary = []
+    for i in range(team_count):
+        team_number = i + 1
+        total_score = [ x[1] for x in scores if x[0] == team_number ][0]
+        team_adjustment = [ x[1] for x in adjustment if x[0] == team_number ][0]
+        adjusted_score = total_score + team_adjustment
+        team_dict = {
+            "team_number": team_number,
+            "rounds": [],
+            "score": total_score,
+            "adjustment": team_adjustment,
+            "adjusted_score": adjusted_score,
+            "rank": -1
+        }
+        for j in range(round_number):
+            round_match = matches[j]            
+            match = [ x for x in round_match if x[1] == team_number ][0]
+            opp_team = match[2]
+            table = int((match[0]+1)/2)
+            current_round_score = round_scores[j]
+            score = [ x[1] for x in current_round_score if x[0] == team_number ][0]
+            rnd_score_entry = {
+                "opp_team": opp_team,
+                "table": table,
+                "score": score
+            }
+            team_dict["rounds"].append(rnd_score_entry)
+        team_dict_ary.append(team_dict)
+
+    final_score_sorted_by_rank = sorted(team_dict_ary, reverse=True, key=itemgetter('adjusted_score'))
+    i = 1;
+    for team in final_score_sorted_by_rank:
+        team["rank"] = i
+        i = i + 1
+    final_score_sorted_by_team = sorted(final_score_sorted_by_rank, key=itemgetter('team_number'))    
+
+    f = open(FINAL_SCORE_TEMPLATE_PATH, "r")
+    tmp_html = f.read()
+    f.close()
+    tmpl = Template(tmp_html)
+    round_number_counts = [ x+1 for x in range(round_number)]
+    html = tmpl.render({"teams":final_score_sorted_by_team, "round_numbers":round_number_counts })
+
+    options = {
+        'page-size': 'A4',
+        'orientation': 'Landscape',
+        'margin-top': '20mm',
+        'margin-right': '20mm',
+        'margin-bottom': '20mm',
+        'margin-left': '20mm',
+        'encoding': "UTF-8",
+        'grayscale': None,
+        'outline-depth':3,
+        # 'footer-center':'[page]',
+        'footer-line': None,
+    }
+    pdfkit.from_string(html, pdf_file, options=options)
+
+
 def match_table_process(matches, team_count, round_number, scores, round_scores, adjustment, pdf_file):
     team_dict_ary = []
     for i in range(team_count):
@@ -216,7 +276,6 @@ def match_table_process(matches, team_count, round_number, scores, round_scores,
         total_score = [ x[1] for x in scores if x[0] == team_number ][0]
         team_adjustment = [ x[1] for x in adjustment if x[0] == team_number ][0]
         adjusted_score = total_score + team_adjustment
-        #rank = ""
         team_dict = {
             "team_number": team_number,
             "rounds": [],
@@ -224,8 +283,8 @@ def match_table_process(matches, team_count, round_number, scores, round_scores,
             "opp_team": 0,
             "table": 0,
             "adjustment": team_adjustment,
-            "adjusted_score": adjusted_score
-            #"rank": rank
+            "adjusted_score": adjusted_score,
+            "rank": ""
         }
         for j in range(round_number):
             round_match = matches[j]            
@@ -245,6 +304,17 @@ def match_table_process(matches, team_count, round_number, scores, round_scores,
                 }
                 team_dict["rounds"].append(rnd_score_entry)
         team_dict_ary.append(team_dict)
+
+    if round_number == 1:
+        team_dict_sorted_by_team = team_dict_ary
+    else:
+        team_dict_sorted_by_rank = sorted(team_dict_ary, reverse=True, key=itemgetter('adjusted_score'))
+        i = 1;
+        for team in team_dict_sorted_by_rank:
+            team["rank"] = i
+            i = i + 1
+        team_dict_sorted_by_team = sorted(team_dict_sorted_by_rank, key=itemgetter('team_number'))    
+
     f = open(SEAT_MATCH_TEMPLATE_PATH, "r")
     tmp_html = f.read()
     f.close()
@@ -253,7 +323,7 @@ def match_table_process(matches, team_count, round_number, scores, round_scores,
         round_number_counts = []
     else:
         round_number_counts = [ x+1 for x in range(round_number-1)]
-    html = tmpl.render({"teams":team_dict_ary, "round":round_number, "round_numbers":round_number_counts })
+    html = tmpl.render({"teams":team_dict_sorted_by_team, "round":round_number, "round_numbers":round_number_counts })
 
     options = {
         'page-size': 'A4',
