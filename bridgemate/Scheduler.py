@@ -60,36 +60,115 @@ class CustomScheduler(BaseScheduler):
 
 class RoundRobinScheduler(BaseScheduler):
     def __init__(self, meta_data):
-        self.meta_data = meta_data
+        self.match = meta_data["match"]
+        self.score = meta_data["score"]
         self.team_count = meta_data['team_count']
+        if "round_score" in meta_data.keys()    :
+            self.round_score = meta_data["round_score"]
+        else:
+            self.round_score = []
+        self.current_round = meta_data["current_round"]
+        #self.matchup_table = meta_data["matchup_table"]
+
+        if self.team_count == 10:
+            match1 = [[1, 2, 1], [2, 1, 2], [3, 4, 3], [4, 3, 4], [5, 6, 5], [6, 5, 6], [7, 8, 7], [8, 7, 8], [9, 10, 9], [10, 9, 10]]
+            match2 = [[1, 3, 1], [2, 1, 3], [3, 5, 2], [4, 2, 5], [5, 6, 4], [6, 4, 6], [7, 9, 7], [8, 7, 9], [9, 10, 8], [10, 8, 10]]
+            match3 = [[1, 4, 1], [2, 1, 4], [3, 6, 2], [4, 2, 6], [5, 8, 3], [6, 3, 8], [7, 9, 5], [8, 5, 9], [9, 10, 7], [10, 7, 10]]
+            match4 = [[1, 5, 1], [2, 1, 5], [3, 7, 2], [4, 2, 7], [5, 9, 3], [6, 3, 9], [7, 8, 4], [8, 4, 8], [9, 10, 6], [10, 6, 10]]
+            match5 = [[1, 6, 1], [2, 1, 6], [3, 8, 2], [4, 2, 8], [5, 7, 3], [6, 3, 7], [7, 9, 4], [8, 4, 9], [9, 10, 5], [10, 5, 10]]
+            match6 = [[1, 7, 1], [2, 1, 7], [3, 9, 2], [4, 2, 9], [5, 6, 3], [6, 3, 6], [7, 8, 5], [8, 5, 8], [9, 10, 4], [10, 4, 10]]
+            match7 = [[1, 8, 1], [2, 1, 8], [3, 4, 2], [4, 2, 4], [5, 7, 5], [6, 5, 7], [7, 9, 6], [8, 6, 9], [9, 10, 3], [10, 3, 10]]
+            match8 = [[1, 9, 1], [2, 1, 9], [3, 5, 3], [4, 3, 5], [5, 7, 4], [6, 4, 7], [7, 8, 6], [8, 6, 8], [9, 10, 2], [10, 2, 10]]
+            match9 = [[1, 10, 1], [2, 1, 10], [3, 3, 2], [4, 2, 3], [5, 5, 4], [6, 4, 5], [7, 7, 6], [8, 6, 7], [9, 9, 8], [10, 8, 9]]
+            self.match.append(match1)
+            self.match.append(match2)
+            self.match.append(match3)
+            self.match.append(match4)
+            self.match.append(match5)
+            self.match.append(match6)
+            self.match.append(match7)
+            self.match.append(match8)
+            self.match.append(match9)
+        elif self.team_count == 12:
+            match1  = [[1, 2, 1], [2, 1, 2], [3, 4, 3], [4, 3, 4], [5, 6, 5], [6, 5, 6], [7, 8, 7], [8, 7, 8], [9, 10, 9], [10, 9, 10], [11, 12, 11], [12, 11, 12]]
+            match2  = [[1, 3, 1], [2, 1, 3], [3, 11, 2], [4, 2, 11], [5, 7, 4], [6, 4, 7], [7, 9, 5], [8, 5, 9], [9, 8, 6], [10, 6, 8], [11, 12, 10], [12, 10, 12]]
+            match3  = [[1, 4, 1], [2, 1, 4], [3, 6, 2], [4, 2, 6], [5, 5, 3], [6, 3, 5], [7, 11, 7], [8, 7, 11], [9, 10, 8], [10, 8, 10], [11, 12, 9], [12, 9, 12]]
+            match4  = [[1, 5, 1], [2, 1, 5], [3, 9, 2], [4, 2, 9], [5, 6, 3], [6, 3, 6], [7, 11, 4], [8, 4, 11], [9, 10, 7], [10, 7, 10], [11, 12, 8], [12, 8, 12]]
+            match5  = [[1, 6, 1], [2, 1, 6], [3, 8, 2], [4, 2, 8], [5, 9, 3], [6, 3, 9], [7, 10, 4], [8, 4, 10], [9, 11, 5], [10, 5, 11], [11, 12, 7], [12, 7, 12]]
+            match6  = [[1, 7, 1], [2, 1, 7], [3, 4, 2], [4, 2, 4], [5, 8, 3], [6, 3, 8], [7, 10, 5], [8, 5, 10], [9, 11, 9], [10, 9, 11], [11, 12, 6], [12, 6, 12]]
+            match7  = [[1, 8, 1], [2, 1, 8], [3, 7, 2], [4, 2, 7], [5, 11, 3], [6, 3, 11], [7, 9, 4], [8, 4, 9], [9, 10, 6], [10, 6, 10], [11, 12, 5], [12, 5, 12]]
+            match8  = [[1, 9, 1], [2, 1, 9], [3, 10, 2], [4, 2, 10], [5, 7, 3], [6, 3, 7], [7, 8, 5], [8, 5, 8], [9, 11, 6], [10, 6, 11], [11, 12, 4], [12, 4, 12]]
+            match9  = [[1, 10, 1], [2, 1, 10], [3, 5, 2], [4, 2, 5], [5, 6, 4], [6, 4, 6], [7, 9, 7], [8, 7, 9], [9, 11, 8], [10, 8, 11], [11, 12, 3], [12, 3, 12]]
+            match10 = [[1, 11, 1], [2, 1, 11], [3, 10, 3], [4, 3, 10], [5, 8, 4], [6, 4, 8], [7, 7, 5], [8, 5, 7], [9, 9, 6], [10, 6, 9], [11, 12, 2], [12, 2, 12]]
+            match11 = [[1, 12, 1], [2, 1, 12], [3, 3, 2], [4, 2, 3], [5, 5, 4], [6, 4, 5], [7, 7, 6], [8, 6, 7], [9, 9, 8], [10, 8, 9], [11, 11, 10], [12, 10, 11]]
+            self.match.append(match1)
+            self.match.append(match2)
+            self.match.append(match3)
+            self.match.append(match4)
+            self.match.append(match5)
+            self.match.append(match6)
+            self.match.append(match7)
+            self.match.append(match8)
+            self.match.append(match9)
+            self.match.append(match10)
+            self.match.append(match11)
+        else:
+            raise NotImplementedError
 
     def schedule_round(self, round_number):
         pass
 
     def get_match_by_round(self, current_round):
         # return (tableid, ns_team, ew_team) array
-        raise NotImplementedError
-
-    def get_metadata(self):
-        return self.meta_data
+        return self.match[current_round-1]
 
     def schedule_next_round(self):
         self.current_round = self.current_round + 1
 
         # Init
-        if self._round_robin_arry is None:
-            self._round_robin_arry = range(1, self.team_count + 1)
+        #if self._round_robin_arry is None:
+        #    self._round_robin_arry = range(1, self.team_count + 1)
         # Round robin rotate
-        else:
-            next_array = [ self._round_robin_arry[0] ] + [ self._round_robin_arry[-1] ] + self._round_robin_arry[1:-1]
-            self._round_robin_arry = next_array
+        #else:
+        #    next_array = [ self._round_robin_arry[0] ] + [ self._round_robin_arry[-1] ] + self._round_robin_arry[1:-1]
+        #    self._round_robin_arry = next_array
+    
+    def get_metadata(self):
+        return {
+            "match": self.match,
+            "score": self.score,
+            "round_score": self.round_score,
+            #"matchup_table": self.matchup_table,
+            "team_count": self.team_count,
+            "current_round": self.current_round
+        }
 
+    def is_next_round_available(self):
+        return self.current_round < self.team_count-1
+
+    def get_current_round(self):
+        return self.current_round
+
+    def set_score(self, new_score):
+        self.score = new_score
+
+    def set_match(self, new_match):
+        self.match = new_match
+
+    def append_score(self, score_by_round):
+        self.round_score.append(score_by_round)
+
+    def get_scores(self):
+        return self.score
+
+    def get_round_scores(self):
+        return self.round_score
 
 class SwissScheduler(BaseScheduler):
     def __init__(self, meta_data):
         self.match = meta_data["match"]
         self.score = meta_data["score"]
-        if "round_score" in meta_data.keys()    :
+        if "round_score" in meta_data.keys():
             self.round_score = meta_data["round_score"]
         else:
             self.round_score = []
