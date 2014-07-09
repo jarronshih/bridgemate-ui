@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    </head>
+
+    <body>
+        <h1 class="text-center">Round {{round}} Board Record</h1>
+        <table class="table table-bordered text-center" style="font-size:20px;" >
+            <thead>
+                <tr>
+                <td>Board #</td>
+                <td>Table</td>
+                <td>NS</td>
+                <td>EW</td>
+                <td>Contract</td>
+                <td>Dealer</td>
+                <td>Result</td>
+                <td>NS Score</td>
+                </tr>
+            </thead>
+            <tbody>
+                {%- for board in boards %}
+                <tr>
+                <td>{{ board.board_no }}</td>
+                <td>{{ board.table_no }}</td>
+                <td>{{ board.ns_team }}</td>
+                <td>{{ board.ew_team }}</td>
+                <td>{{ board.contract }}</td>
+                <td>{{ board.declarer }}</td>
+                <td>{{ board.result }}</td>
+                <td>{{ board.ns_score }}</td>
+                </tr>
+                {%- endfor %}
+            </tbody>
+        </table>
+    </body> 
+</html>

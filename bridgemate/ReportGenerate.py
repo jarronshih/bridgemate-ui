@@ -1,9 +1,62 @@
 import unittest
 from jinja2 import Template
+from operator import itemgetter
 import pdfkit
 import os
 from bridgemate.Score import *
-from utils.config import SWISS_SCORE_TEMPLATE_PATH, SEAT_MATCH_TEMPLATE_PATH
+from utils.config import SWISS_SCORE_TEMPLATE_PATH, SEAT_MATCH_TEMPLATE_PATH, BOARD_RECORD_TEMPLATE_PATH
+
+def result_to_record(result_array):
+    board_record_ary = []
+    for array_elt in result_array:    
+        ns_team = int(array_elt["PairNS"])
+        ew_team = int(array_elt["PairEW"])
+        table_no = int(array_elt["Table"])
+        board_no = int(array_elt["Board"])
+        contract = array_elt["Contract"]
+        declarer = array_elt["NS/EW"]
+        result = array_elt["Result"]
+        ns_score = compute_score(board_no, contract, declarer, result)
+        board_record={
+            "board_no": board_no,
+            "table_no": table_no,
+            "ns_team": ns_team,
+            "ew_team": ew_team,
+            "contract": contract,
+            "declarer": declarer,
+            "result": result,
+            "ns_score": ns_score
+        }
+        board_record_ary.append(board_record)
+    sorted_board_record_ary = sorted(board_record_ary, key=itemgetter('board_no', 'table_no'))
+    return sorted_board_record_ary
+
+def board_record_process(result_array, round_number, project_path):
+    board_record_array = result_to_record(result_array)
+    
+    # gen html
+    f = open(BOARD_RECORD_TEMPLATE_PATH, "r")
+    tmp_html = f.read()
+    f.close()
+    tmpl = Template(tmp_html)
+    html = tmpl.render({"boards":board_record_array, "round":round_number})
+
+    # gen pdf
+    options = {
+        'page-size': 'A4',
+        'margin-top': '20mm',
+        'margin-right': '20mm',
+        'margin-bottom': '20mm',
+        'margin-left': '20mm',
+        'encoding': "UTF-8",
+        'grayscale': None,
+        'outline-depth':3,
+        # 'footer-center':'[page]',
+        'footer-line': None,
+    }
+    pdf_file_name = project_path + "/" + "Round " + str(round_number) + " Board Record.pdf"
+    print pdf_file_name
+    pdfkit.from_string(html, pdf_file_name, options=options)
 
 
 def result_to_dict(result_array, team_count, start_board, board_count, round_number):

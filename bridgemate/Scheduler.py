@@ -58,31 +58,31 @@ class CustomScheduler(BaseScheduler):
         return self.current_round
 
 
-# class RoundRobinScheduler(BaseScheduler):
-#     def __init__(self, meta_data):
-#         self.meta_data = meta_data
-#         self.team_count = meta_data['team_count']
+class RoundRobinScheduler(BaseScheduler):
+    def __init__(self, meta_data):
+        self.meta_data = meta_data
+        self.team_count = meta_data['team_count']
 
-#     def schedule_round(self, round_number):
-#         pass
+    def schedule_round(self, round_number):
+        pass
 
-#     def get_match_by_round(self, current_round):
-#         # return (tableid, ns_team, ew_team) array
-#         raise NotImplementedError
+    def get_match_by_round(self, current_round):
+        # return (tableid, ns_team, ew_team) array
+        raise NotImplementedError
 
-#     def get_metadata(self):
-#         return self.meta_data
+    def get_metadata(self):
+        return self.meta_data
 
-#     def schedule_next_round(self):
-#         self.current_round = self.current_round + 1
+    def schedule_next_round(self):
+        self.current_round = self.current_round + 1
 
-#         # Init
-#         if self._round_robin_arry is None:
-#             self._round_robin_arry = range(1, self.team_count + 1)
-#         # Round robin rotate
-#         else:
-#             next_array = [ self._round_robin_arry[0] ] + [ self._round_robin_arry[-1] ] + self._round_robin_arry[1:-1]
-#             self._round_robin_arry = next_array
+        # Init
+        if self._round_robin_arry is None:
+            self._round_robin_arry = range(1, self.team_count + 1)
+        # Round robin rotate
+        else:
+            next_array = [ self._round_robin_arry[0] ] + [ self._round_robin_arry[-1] ] + self._round_robin_arry[1:-1]
+            self._round_robin_arry = next_array
 
 
 class SwissScheduler(BaseScheduler):
@@ -217,6 +217,9 @@ class SwissScheduler(BaseScheduler):
 
     def set_score(self, new_score):
         self.score = new_score
+
+    def set_match(self, new_match):
+        self.match = new_match
 
     def append_score(self, score_by_round):
         self.round_score.append(score_by_round)

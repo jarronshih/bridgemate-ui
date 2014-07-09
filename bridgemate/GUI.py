@@ -66,6 +66,7 @@ class MainFrame(wx.Frame):
         self.sizer.Add(self.project_running_panel, 1, wx.EXPAND)
         self.SetSizer(self.sizer)
 
+        self.Bind(wx.EVT_BUTTON, self.on_generate_schedule, self.project_status_panel.btn_schedule_next_round)
         self.Bind(wx.EVT_BUTTON, self.on_start_bcs, self.project_status_panel.btn_run_next_round)
         self.Bind(wx.EVT_BUTTON, self.on_stop_bcs, self.project_running_panel.btn_stop_bcs)
         self.bcs_timer = wx.Timer(self)
@@ -96,6 +97,10 @@ class MainFrame(wx.Frame):
         self.reload_project()
         dlg.Destroy()
 
+    def on_generate_schedule(self, e):
+        self.bm2_manager.schedule_next_round()
+        frame = MatchTableFrame(None, self.bm2_manager.config)
+        frame.Show(True)
 
     def on_start_bcs(self, e):
         # renew the output directiry
@@ -176,6 +181,8 @@ class MainFrame(wx.Frame):
         self.bm2_manager.scheduler.score = total_vps
         self.bm2_manager.scheduler.append_score(vps)
 
+        board_record_process(data_ary, current_round, get_project_folder(self.bm2_manager.project_name))
+
         self.bm2_manager.end_and_save_config()
         
         self.reload_project()
@@ -236,6 +243,9 @@ class ProjectStatusPanel(wx.Panel):
         self.btn_score_detail = wx.Button(self, label='Score', size=(70, 30))
         vbox.Add(self.btn_score_detail, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP)
         self.Bind(wx.EVT_BUTTON, self.on_score_detail, self.btn_score_detail)
+
+        self.btn_schedule_next_round = wx.Button(self, label='Schedule Next Round', size=(70, 30))
+        vbox.Add(self.btn_schedule_next_round, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP)
 
         self.btn_run_next_round = wx.Button(self, label='Run Next Round', size=(70, 30))
         vbox.Add(self.btn_run_next_round, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP)
@@ -304,7 +314,55 @@ class ProjectRuningPanel(wx.Panel):
     def refresh_ui(self, msg):
         self.st_msg.SetLabel(msg)
 
+class MatchTableFrame(wx.Frame):
+    def __init__(self, parent, config):
+        wx.Frame.__init__(self, parent, -1, "Score",
+                size=(275, 275))
+        grid = wx.grid.Grid(self)
+        table = MatchTable(config)
+        grid.SetTable(table)
 
+class MatchTable(wx.grid.PyGridTableBase):
+    def __init__(self, config):
+        wx.grid.PyGridTableBase.__init__(self)
+        self.config = config
+
+    def GetNumberRows(self):
+        """Return the number of rows in the grid"""
+        return self.config.team_count
+
+    def GetNumberCols(self):
+        """Return the number of columns in the grid"""
+        return 2
+
+    def IsEmptyCell(self, row, col):
+        """Return True if the cell is empty"""
+        return False
+
+    def GetTypeName(self, row, col):
+        """Return the name of the data type of the value in the cell"""
+        return None
+
+    def GetValue(self, row, col):
+        """Return the value of a cell"""
+        current_matchup = self.config.scheduler_metadata["match"][len(self.config.scheduler_metadata["match"])-1]
+        return current_matchup[row][col+1]
+
+    def SetValue(self, row, col, value):
+        """Set the value of a cell"""
+        if value.isdigit():
+            meta = self.config.scheduler_metadata
+            matchup = []
+            for table, ns, ew in self.config.scheduler_metadata["match"][len(self.config.scheduler_metadata["match"])-1]:
+                if table == row + 1:
+                    if col == 0:
+                        matchup.append((table, int(value), ew))
+                    elif col == 1:
+                        matchup.append((table, ns, int(value)))
+                else:
+                    matchup.append((table, ns, ew))
+            meta["match"][len(self.config.scheduler_metadata["match"])-1] = matchup
+            self.config.scheduler_metadata = meta
 
 
 class ScoreTableFrame(wx.Frame):

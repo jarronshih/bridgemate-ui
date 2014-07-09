@@ -32,8 +32,7 @@ class BM2Manager(object):
         self.config.setup(tm_name, team_count, board_count, scheduler_type, scheduler_metadata, adjustment, start_board_number, section_id, section_letter)
         self.scheduler = self.config.get_scheduler()
 
-    def init_bws_file(self):
-        logger.info("Init .bws file")
+    def schedule_next_round(self):
         complete_round = self.scheduler.get_current_round()
         if complete_round > 0:
             total_score = []
@@ -49,9 +48,15 @@ class BM2Manager(object):
         else:
             self.scheduler.set_score(self.config.scheduler_metadata["score"])
         self.scheduler.schedule_next_round()
+        print self.scheduler.get_match_by_round(self.scheduler.get_current_round())
         self.config.scheduler_metadata = self.scheduler.get_metadata()
+
+    def init_bws_file(self):
+        logger.info("Init .bws file")
+        self.scheduler.set_match(self.config.scheduler_metadata["match"])
         self.config.write()
         current_round = self.scheduler.get_current_round()
+        print self.scheduler.get_match_by_round(current_round)
         bws_path = get_project_file_path(self.project_name, str(current_round) + '.bws')
         bws = BWS(bws_path)
         bws.fill_section(current_round=current_round,
