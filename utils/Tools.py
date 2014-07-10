@@ -22,4 +22,9 @@ def str_to_num(s):
     except Exception, e:
         pass
 
+    try:
+        return float(s)
+    except Exception, e:
+        pass
+
     return None
