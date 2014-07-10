@@ -203,7 +203,7 @@ class MainFrame(wx.Frame):
         self.bm2_manager.scheduler.score = total_vps
         self.bm2_manager.scheduler.append_score(vps)
 
-        board_record_process(data_ary, current_round, get_project_folder(self.bm2_manager.project_name))
+        board_record_process(data_ary, current_round, self.bm2_manager.config.start_board_number, self.bm2_manager.config.board_count, get_project_folder(self.bm2_manager.project_name))
 
         self.bm2_manager.end_and_save_config()
         
@@ -343,16 +343,25 @@ class ProjectRuningPanel(wx.Panel):
 
 class MatchTableFrame(wx.Frame):
     def __init__(self, parent, config):
-        wx.Frame.__init__(self, parent, -1, "Score",
+        wx.Frame.__init__(self, parent, -1, "Match Table: Round " + str(config.scheduler_metadata["current_round"]),
                 size=(275, 275))
         grid = wx.grid.Grid(self)
         table = MatchTable(config)
         grid.SetTable(table)
+        grid.SetColLabelValue(0, "NS")
+        grid.SetColLabelValue(1, "EW")
 
 class MatchTable(wx.grid.PyGridTableBase):
     def __init__(self, config):
         wx.grid.PyGridTableBase.__init__(self)
         self.config = config
+
+    def GetColLabelValue(self, col):
+        cols = ["NS", "EW"]
+        return cols[col]
+
+    def GetRowLabelValue(self, row):
+        return "Table " + str(row+1)
 
     def GetNumberRows(self):
         """Return the number of rows in the grid"""
@@ -372,7 +381,7 @@ class MatchTable(wx.grid.PyGridTableBase):
 
     def GetValue(self, row, col):
         """Return the value of a cell"""
-        current_matchup = self.config.scheduler_metadata["match"][len(self.config.scheduler_metadata["match"])-1]
+        current_matchup = self.config.scheduler_metadata["match"][self.config.scheduler_metadata["current_round"]-1]
         return current_matchup[row][col+1]
 
     def SetValue(self, row, col, value):
@@ -380,7 +389,7 @@ class MatchTable(wx.grid.PyGridTableBase):
         if value.isdigit():
             meta = self.config.scheduler_metadata
             matchup = []
-            for table, ns, ew in self.config.scheduler_metadata["match"][len(self.config.scheduler_metadata["match"])-1]:
+            for table, ns, ew in self.config.scheduler_metadata["match"][self.config.scheduler_metadata["current_round"]-1]:
                 if table == row + 1:
                     if col == 0:
                         matchup.append((table, int(value), ew))
@@ -405,6 +414,13 @@ class ScoreTable(wx.grid.PyGridTableBase):
     def __init__(self, config):
         wx.grid.PyGridTableBase.__init__(self)
         self.config = config
+
+    def GetColLabelValue(self, col):
+        cols = ["Round " + str(self.config.scheduler_metadata["current_round"]), "Adjustment"]
+        return cols[col]
+
+    def GetRowLabelValue(self, row):
+        return "Team " + str(row+1)
 
     def GetNumberRows(self):
         """Return the number of rows in the grid"""

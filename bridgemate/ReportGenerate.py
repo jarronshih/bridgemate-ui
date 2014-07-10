@@ -8,55 +8,83 @@ from utils.config import SWISS_SCORE_TEMPLATE_PATH, SEAT_MATCH_TEMPLATE_PATH, BO
 
 def result_to_record(result_array):
     board_record_ary = []
-    for array_elt in result_array:    
-        ns_team = int(array_elt["PairNS"])
-        ew_team = int(array_elt["PairEW"])
-        table_no = int(array_elt["Table"])
-        board_no = int(array_elt["Board"])
-        contract = array_elt["Contract"]
-        declarer = array_elt["NS/EW"]
-        result = array_elt["Result"]
-        ns_score = compute_score(board_no, contract, declarer, result)
-        board_record={
-            "board_no": board_no,
-            "table_no": table_no,
-            "ns_team": ns_team,
-            "ew_team": ew_team,
-            "contract": contract,
-            "declarer": declarer,
-            "result": result,
-            "ns_score": ns_score
+
+    for board_num in range(start_board, start_board+board_count):
+        board_rec = {
+            "board_no": board_num,
+            "board": []
         }
-        board_record_ary.append(board_record)
-    sorted_board_record_ary = sorted(board_record_ary, key=itemgetter('board_no', 'table_no'))
+        for array_elt in result_array:
+            if int(array_elt["Board"]) == board_num:
+                ns_team = int(array_elt["PairNS"])
+                ew_team = int(array_elt["PairEW"])
+                table_no = int(array_elt["Table"])
+                contract = array_elt["Contract"]
+                declarer = array_elt["NS/EW"]
+                result = array_elt["Result"]
+                ns_score = compute_score(board_no, contract, declarer, result)
+                board_record={
+                    "table_no": table_no,
+                    "ns_team": ns_team,
+                    "ew_team": ew_team,
+                    "contract": contract,
+                    "declarer": declarer,
+                    "result": result,
+                    "ns_score": ns_score
+                }
+                board_rec["board"].append(board_record)
+        sorted_board = sorted(board_rec["board"], ket=itemgetter('table_no'))
+        board_rec["board"] = sorted_board
+        board_record_ary.append(board_rec)
+    sorted_board_record_ary = sorted(board_record_ary, key=itemgetter('board_no'))
     return sorted_board_record_ary
 
-def board_record_process(result_array, round_number, project_path):
-    board_record_array = result_to_record(result_array)
+def board_record_process(result_array, round_number, start_board, board_count, project_path):
+    board_record_array = result_to_record(result_array, start_board, board_count)
     
     # gen html
-    f = open(BOARD_RECORD_TEMPLATE_PATH, "r")
-    tmp_html = f.read()
-    f.close()
-    tmpl = Template(tmp_html)
-    html = tmpl.render({"boards":board_record_array, "round":round_number})
+    html_files = []   
+    for board_record in result_dict_array:        
+        file_name = output_folder + "/" + str(board_record["board_no"]) + ".html"
+        print file_name
+        pdf_file_name = project_path + "/" + "Round " + str(round_number) + " Board Record.pdf"
+        print pdf_file_name
+        html_files.append(file_name)
+        f = open(BOARD_RECORD_TEMPLATE_PATH, "r")
+        tmp_html = f.read()
+        f.close()
+        tmpl = Template(tmp_html)
+        html = tmpl.render({"boards":board_record["board"], "round":round_number, "board_no": board_record["board_no"]})
+        f = open(file_name, "w")
+        f.write(html)
+        f.close()        
+
+    html_files_to_pdf(html_files, pdf_file_name)
+
+
+    # gen html
+#    f = open(BOARD_RECORD_TEMPLATE_PATH, "r")
+#    tmp_html = f.read()
+#    f.close()
+#    tmpl = Template(tmp_html)
+#    html = tmpl.render({"boards":board_record_array, "round":round_number})
 
     # gen pdf
-    options = {
-        'page-size': 'A4',
-        'margin-top': '20mm',
-        'margin-right': '20mm',
-        'margin-bottom': '20mm',
-        'margin-left': '20mm',
-        'encoding': "UTF-8",
-        'grayscale': None,
-        'outline-depth':3,
-        # 'footer-center':'[page]',
-        'footer-line': None,
-    }
-    pdf_file_name = project_path + "/" + "Round " + str(round_number) + " Board Record.pdf"
-    print pdf_file_name
-    pdfkit.from_string(html, pdf_file_name, options=options)
+#    options = {
+#        'page-size': 'A4',
+#        'margin-top': '20mm',
+#        'margin-right': '20mm',
+#        'margin-bottom': '20mm',
+#        'margin-left': '20mm',
+#        'encoding': "UTF-8",
+#        'grayscale': None,
+#        'outline-depth':3,
+#        # 'footer-center':'[page]',
+#        'footer-line': None,
+#    }
+#    pdf_file_name = project_path + "/" + "Round " + str(round_number) + " Board Record.pdf"
+#    print pdf_file_name
+#    pdfkit.from_string(html, pdf_file_name, options=options)
 
 
 def result_to_dict(result_array, team_count, start_board, board_count, round_number):

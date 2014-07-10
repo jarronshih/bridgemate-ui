@@ -6,11 +6,10 @@
     </head>
 
     <body>
-        <h1 class="text-center">Round {{round}} Board Record</h1>
+        <h1 class="text-center">Round {{round}} Board {{board_no}}</h1>
         <table class="table table-bordered text-center" style="font-size:20px;" >
             <thead>
                 <tr>
-                <td>Board #</td>
                 <td>Table</td>
                 <td>NS</td>
                 <td>EW</td>
@@ -23,7 +22,6 @@
             <tbody>
                 {%- for board in boards %}
                 <tr>
-                <td>{{ board.board_no }}</td>
                 <td>{{ board.table_no }}</td>
                 <td>{{ board.ns_team }}</td>
                 <td>{{ board.ew_team }}</td>
