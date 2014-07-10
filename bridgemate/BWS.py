@@ -50,6 +50,12 @@ class BWS(object):
     def init_file(self):
         shutil.copy(BWS_TEMPLATE_PATH, self.file_path)
 
+        mdb = MDB97()
+        mdb.load(self.file_path)
+        mdb.execute("ALTER TABLE Settings ADD BM2AutoShowScoreRecap BIT")
+        mdb.execute("ALTER TABLE Settings ADD BM2ScoreRecap BIT")
+        mdb.close()
+
     def add_client_to_db(self, computer_name=None):
         if computer_name is None:
             computer_name = get_computer_name()
@@ -117,9 +123,8 @@ class BWS(object):
             (SETTINGS_SHOWRESULTS, "0"),
             (SETTINGS_SHOWOWNRESULT, "1"),
             (SETTINGS_SHOWPERCENTAGE, "0"),
-        #    (SETTINGS_GROUPSECTIONS, "0"),
-        #    (SETTINGS_BM2SCORERECAP, "1"),
-        #    (SETTINGS_BM2AUTOSHOWSCORERECAP, "1")
+            (SETTINGS_BM2SCORERECAP, "1"),
+            (SETTINGS_BM2AUTOSHOWSCORERECAP, "1")
         ]
         sql = SettingsTable().get_insert_sql(fields)
         mdb.execute(sql)
