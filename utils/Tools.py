@@ -16,9 +16,10 @@ def ask_user_input(question, default=None):
     ret = raw_input(question) or default
     return ret
 
-def isanum(str):
+def str_to_num(s):
     try:
-        float(str);
-        return True;
-    except ValueError:
-        return False;
+        return float(int(s))
+    except Exception, e:
+        pass
+
+    return None

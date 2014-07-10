@@ -3,7 +3,7 @@ import wx.grid
 from bridgemate.Bridgemate2Manager import *
 from bridgemate.ReportGenerate import *
 from utils.config import PROJECT_FOLDER
-from utils.Tools import isanum
+from utils.Tools import str_to_num
 
 MAINFRAME_HEIGHT=400
 MAINFRAME_WIDTH=600
@@ -440,21 +440,21 @@ class ScoreTable(wx.grid.PyGridTableBase):
 
     def SetValue(self, row, col, value):
         """Set the value of a cell"""
-        if isanum(value):            
+        if not str_to_num(value) is None:            
             if col == 0:
                 meta = self.config.scheduler_metadata
                 scores = []
                 if len(self.config.scheduler_metadata["round_score"]) == 0:     #no rounds are played
                     for team_number, score in self.config.scheduler_metadata["score"]:
                         if team_number == row + 1:
-                            scores.append([team_number, float(value)])
+                            scores.append([team_number, str_to_num(value)])
                         else:
                             scores.append([team_number, score])
                     meta["score"] = scores                    
                 else:
                     for team_number, score in self.config.scheduler_metadata["round_score"][len(self.config.scheduler_metadata["round_score"])-1]:
                         if team_number == row + 1:
-                            scores.append([team_number, float(value)])
+                            scores.append([team_number, str_to_num(value)])
                         else:
                             scores.append([team_number, score])
                     meta["round_score"][len(self.config.scheduler_metadata["round_score"])-1] = scores
@@ -464,7 +464,7 @@ class ScoreTable(wx.grid.PyGridTableBase):
                 adj = []
                 for team_number, score in self.config.adjustment:
                     if team_number == row + 1:
-                        adj.append([team_number, float(value)])
+                        adj.append([team_number, str_to_num(value)])
                     else:
                         adj.append([team_number, score])
                 adjs = adj
