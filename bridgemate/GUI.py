@@ -471,14 +471,191 @@ class ScoreTable(wx.grid.PyGridTableBase):
                 self.config.adjustment = adjs
 
 
-
 class NewProjectDialog(wx.Dialog):
     def __init__(self, parent):
         super(NewProjectDialog, self).__init__(parent=parent)
-        
+
         self.on_init()
 
         self.SetTitle("New Project")
+        self.Centre()
+        self.Show(True)
+
+    def on_init(self):
+        self.SetSize((400,300))
+        panel = wx.Panel(self)
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        btn_swiss = wx.Button(panel, label='SWISS')
+        vbox.Add(btn_swiss)
+
+        btn_roundrobin = wx.Button(panel, label='RoundRobin')
+        vbox.Add(btn_roundrobin)
+
+        panel.SetSizer(vbox)
+
+        self.Bind(wx.EVT_BUTTON, self.on_swiss, btn_swiss)
+        self.Bind(wx.EVT_BUTTON, self.on_roundrobin, btn_roundrobin)
+
+    def on_swiss(self, e):
+        self.Show(False)
+        dlg = NewProjectSWISSDialog(self)
+
+        if dlg.ShowModal() == wx.ID_OK:
+            self.project_name = dlg.get_project_name()
+            self.EndModal(wx.ID_OK)
+        else:
+            self.Close()
+
+    def on_roundrobin(self, e):
+        self.Show(False)
+        dlg = NewProjectRoundRobinDialog(self)
+
+
+        if dlg.ShowModal() == wx.ID_OK:
+            self.project_name = dlg.get_project_name()
+            self.EndModal(wx.ID_OK)
+        else:
+            self.Close()
+
+    def get_project_name(self):
+        return self.project_name
+
+class NewProjectRoundRobinDialog(wx.Dialog):
+    def __init__(self, parent):
+        super(NewProjectRoundRobinDialog, self).__init__(parent=parent)
+        
+        self.on_init()
+
+        self.SetTitle("New RoundRobin Project")
+        self.Centre()
+        self.Show(True)
+
+    def on_init(self):
+        self.SetSize((400,300))
+        panel = wx.Panel(self)
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        hbox1 = wx.BoxSizer(wx.HORIZONTAL)
+        st1 = wx.StaticText(panel, label='Proejct Name: ')
+        hbox1.Add(st1, flag=wx.RIGHT, border=8)
+        self.project_name_textctrl = wx.TextCtrl(panel)
+        import datetime
+        today_str = datetime.datetime.today().strftime("%Y_%m_%d")
+        self.project_name_textctrl.AppendText('%s_tm' % today_str)
+        hbox1.Add(self.project_name_textctrl, proportion=1)
+        vbox.Add(hbox1, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP, border=10)
+
+        vbox.Add((-1, 10))
+
+        hbox2 = wx.BoxSizer(wx.HORIZONTAL)
+        st2 = wx.StaticText(panel, label='Scheduler: RoundRobin')
+        hbox2.Add(st2)
+        vbox.Add(hbox2, flag=wx.LEFT | wx.TOP, border=10)
+
+        vbox.Add((-1, 10))
+
+
+        hbox3 = wx.BoxSizer(wx.HORIZONTAL)
+        st3 = wx.StaticText(panel, label='Team Count: ')
+        hbox3.Add(st3, flag=wx.RIGHT, border=8)
+        self.team_count_textctrl = wx.TextCtrl(panel)
+        hbox3.Add(self.team_count_textctrl, proportion=1)
+        vbox.Add(hbox3, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP, border=10)
+
+        vbox.Add((-1, 10))
+
+
+        hbox6 = wx.BoxSizer(wx.HORIZONTAL)
+        st6 = wx.StaticText(panel, label='Board Count: ')
+        hbox6.Add(st6, flag=wx.RIGHT, border=8)
+        self.board_count_textctrl = wx.TextCtrl(panel)
+        hbox6.Add(self.board_count_textctrl, proportion=1)
+        vbox.Add(hbox6, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP, border=10)
+
+        vbox.Add((-1, 25))
+
+        hbox7 = wx.BoxSizer(wx.HORIZONTAL)
+        btn7_1 = wx.Button(panel, label='OK', size=(70, 30))
+        hbox7.Add(btn7_1)
+        btn7_2 = wx.Button(panel, label='Close', size=(70, 30))
+        hbox7.Add(btn7_2)
+        vbox.Add(hbox7, flag=wx.ALIGN_RIGHT|wx.RIGHT, border=5)
+
+        panel.SetSizer(vbox)
+
+        self.Bind(wx.EVT_BUTTON, self.on_save, btn7_1)
+        self.Bind(wx.EVT_BUTTON, self.on_close, btn7_2)
+
+    def on_save(self, e):
+        ret, v = self.validate_input()
+        if ret:
+            # create project
+            project = create_project(v["project_name"])
+            project.setup_config(
+                tm_name="TM", 
+                team_count=v["team_count"], 
+                board_count=v["board_count"], 
+                scheduler_type="RoundRobinScheduler", 
+                scheduler_metadata={
+                    "match":[],
+                    "score": [ [x+1,0] for x in range(v["team_count"]) ],
+                    "team_count": v["team_count"],
+                    "round_score": [],
+                    "current_round": 0
+                }, 
+                adjustment =[ [x+1, 0.0] for x in range(v["team_count"]) ],
+                start_board_number=1, 
+                section_id=1, 
+                section_letter='A'
+            )
+            self.EndModal(wx.ID_OK)
+        else:
+            err_dial = wx.MessageDialog(None, v, 'Error', wx.OK | wx.ICON_ERROR)
+            err_dial.ShowModal()
+            err_dial.Destroy()
+
+    def on_close(self, e):
+        self.Close()
+
+    def validate_input(self):
+        project_name = self.project_name_textctrl.GetValue()
+        team_count = self.team_count_textctrl.GetValue()
+        board_count = self.board_count_textctrl.GetValue()
+
+        values = { 
+            "project_name":project_name, 
+            "team_count": team_count,
+            "board_count":board_count, 
+        }
+
+        if os.path.exists(get_project_folder(values["project_name"])):
+            return False, "Project exist!"
+
+        if not values["team_count"].isdigit():
+            return False, "Team count error"
+        else:
+            values["team_count"] = int(values["team_count"])
+
+        if not values["board_count"].isdigit():
+            return False, "Board count error"
+        else:
+            values["board_count"] = int(values["board_count"])
+
+        return True, values
+
+    def get_project_name(self):
+        return self.project_name_textctrl.GetValue()
+
+class NewProjectSWISSDialog(wx.Dialog):
+    def __init__(self, parent):
+        super(NewProjectSWISSDialog, self).__init__(parent=parent)
+        
+        self.on_init()
+
+        self.SetTitle("New SWISS Project")
         self.Centre()
         self.Show(True)
 
