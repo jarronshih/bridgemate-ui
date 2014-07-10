@@ -6,7 +6,7 @@ import os
 from bridgemate.Score import *
 from utils.config import SWISS_SCORE_TEMPLATE_PATH, SEAT_MATCH_TEMPLATE_PATH, BOARD_RECORD_TEMPLATE_PATH, FINAL_SCORE_TEMPLATE_PATH
 
-def result_to_record(result_array):
+def result_to_record(result_array, start_board, board_count):
     board_record_ary = []
 
     for board_num in range(start_board, start_board+board_count):
@@ -22,7 +22,7 @@ def result_to_record(result_array):
                 contract = array_elt["Contract"]
                 declarer = array_elt["NS/EW"]
                 result = array_elt["Result"]
-                ns_score = compute_score(board_no, contract, declarer, result)
+                ns_score = compute_score(board_num, contract, declarer, result)
                 board_record={
                     "table_no": table_no,
                     "ns_team": ns_team,
@@ -33,32 +33,38 @@ def result_to_record(result_array):
                     "ns_score": ns_score
                 }
                 board_rec["board"].append(board_record)
-        sorted_board = sorted(board_rec["board"], ket=itemgetter('table_no'))
+        sorted_board = sorted(board_rec["board"], key=itemgetter('table_no'))
         board_rec["board"] = sorted_board
         board_record_ary.append(board_rec)
     sorted_board_record_ary = sorted(board_record_ary, key=itemgetter('board_no'))
     return sorted_board_record_ary
 
 def board_record_process(result_array, round_number, start_board, board_count, project_path):
+    output_folder = project_path + "/record_output"
+    if not os.path.exists(output_folder):
+        #import shutil
+        #shutil.rmtree(output_folder)
+        os.makedirs(output_folder)    
+
     board_record_array = result_to_record(result_array, start_board, board_count)
     
     # gen html
     html_files = []   
-    for board_record in result_dict_array:        
+    for board_record in board_record_array:        
         file_name = output_folder + "/" + str(board_record["board_no"]) + ".html"
-        print file_name
-        pdf_file_name = project_path + "/" + "Round " + str(round_number) + " Board Record.pdf"
-        print pdf_file_name
+        print file_name        
         html_files.append(file_name)
         f = open(BOARD_RECORD_TEMPLATE_PATH, "r")
         tmp_html = f.read()
         f.close()
         tmpl = Template(tmp_html)
-        html = tmpl.render({"boards":board_record["board"], "round":round_number, "board_no": board_record["board_no"]})
+        html = tmpl.render({"boards":board_record["board"], "round": round_number, "board_no": board_record["board_no"]})
         f = open(file_name, "w")
         f.write(html)
         f.close()        
-
+    
+    pdf_file_name = project_path + "/" + "Round " + str(round_number) + " Board Record.pdf"
+    print pdf_file_name    
     html_files_to_pdf(html_files, pdf_file_name)
 
 

@@ -224,6 +224,7 @@ class MainFrame(wx.Frame):
             self.bm2_manager.config.read()
             self.project_status_panel.refresh_ui(self.bm2_manager.config)
             self.project_status_panel.btn_run_next_round.Disable()
+            self.project_status_panel.btn_score_detail.Enable()
             self.project_running_panel.Hide()
         elif self.status == PROJECT_STATUS_RUNNING:
             self.project_status_panel.Hide()
