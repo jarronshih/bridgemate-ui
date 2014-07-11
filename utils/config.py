@@ -7,7 +7,7 @@ SWISS_SCORE_TEMPLATE_PATH=os.path.join(BRIDGEMATE_FOLDER, 'template', 'swiss.htm
 SEAT_MATCH_TEMPLATE_PATH=os.path.join(BRIDGEMATE_FOLDER, 'template', 'match_table.html')
 BOARD_RECORD_TEMPLATE_PATH=os.path.join(BRIDGEMATE_FOLDER, 'template', 'board_record.html')
 FINAL_SCORE_TEMPLATE_PATH=os.path.join(BRIDGEMATE_FOLDER, 'template', 'final_result.html')
-BCS_PATH="C:\Program Files (x86)\Bridgemate Pro\BMPro.exe"
+BCS_PATH="C:\Program Files\Bridgemate Pro\BMPro.exe"
 
 DEFAULT_BOARD_COUNT=8
 DEFAULT_SECTION_ID=1

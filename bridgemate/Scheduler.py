@@ -122,6 +122,9 @@ class RoundRobinScheduler(BaseScheduler):
         # return (tableid, ns_team, ew_team) array
         return self.match[current_round-1]
 
+    def get_match(self):
+        return self.match
+
     def schedule_next_round(self):
         self.current_round = self.current_round + 1
 
