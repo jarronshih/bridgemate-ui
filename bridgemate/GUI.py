@@ -136,8 +136,9 @@ class MainFrame(wx.Frame):
         self.bm2_manager.init_bws_file()
         scheduler = self.bm2_manager.config.get_scheduler()
         current_round = scheduler.get_current_round()
-        match_table_process(scheduler.get_match(), self.bm2_manager.config.team_count, current_round, scheduler.get_scores(), scheduler.get_round_scores(), self.bm2_manager.config.adjustment, get_project_folder(self.bm2_manager.project_name) + "/Match%d.pdf" % current_round)
+        match_table_process(scheduler.get_match(), self.bm2_manager.config.team_count, current_round, scheduler.get_scores(), scheduler.get_round_scores(), self.bm2_manager.config.adjustment, self.bm2_manager.config.start_board_number, self.bm2_manager.config.end_board_number, get_project_folder(self.bm2_manager.project_name))
         self.bm2_manager.start_bcs_collect_data()
+
         self.bcs_timer.Start(60*1000)
         self.reload_project()
 
@@ -150,14 +151,14 @@ class MainFrame(wx.Frame):
         scheduler = self.bm2_manager.config.get_scheduler()
         current_round = scheduler.get_current_round()
         pdf_file_name = "Round " + str(current_round)
-        result_data_process(data_ary, self.bm2_manager.config.team_count, self.bm2_manager.config.start_board_number, self.bm2_manager.config.board_count, pdf_file_name, current_round, get_project_folder(self.bm2_manager.project_name), 0)
+        result_data_process(data_ary, self.bm2_manager.config.team_count, self.bm2_manager.config.start_board_number, self.bm2_manager.config.end_board_number, self.bm2_manager.config.board_count, pdf_file_name, current_round, get_project_folder(self.bm2_manager.project_name), 0)
 
         pending_ary = []
         #scheduler = self.bm2_manager.config.get_scheduler()
         matches = scheduler.get_match_by_round(scheduler.get_current_round())
         for table, ns_team, ew_team in matches:
             start_board_number = self.bm2_manager.config.start_board_number
-            end_board = start_board_number + self.bm2_manager.config.board_count
+            end_board = self.bm2_manager.config.end_board_number+1
             board_array = []
             for board in range(start_board_number, end_board):
                 if (ns_team, ew_team, board) in filter_ary:
@@ -190,7 +191,7 @@ class MainFrame(wx.Frame):
         scheduler = self.bm2_manager.config.get_scheduler()
         current_round = scheduler.get_current_round()
         pdf_file_name = "Round " + str(current_round)
-        vps = result_data_process(data_ary, self.bm2_manager.config.team_count, self.bm2_manager.config.start_board_number, self.bm2_manager.config.board_count, pdf_file_name, current_round, get_project_folder(self.bm2_manager.project_name), 1)
+        vps = result_data_process(data_ary, self.bm2_manager.config.team_count, self.bm2_manager.config.start_board_number, self.bm2_manager.config.end_board_number, self.bm2_manager.config.board_count, pdf_file_name, current_round, get_project_folder(self.bm2_manager.project_name), 1)
         
         # parse score
         total_vps = []
@@ -203,8 +204,22 @@ class MainFrame(wx.Frame):
         self.bm2_manager.scheduler.score = total_vps
         self.bm2_manager.scheduler.append_score(vps)
 
-        board_record_process(data_ary, current_round, self.bm2_manager.config.start_board_number, self.bm2_manager.config.board_count, get_project_folder(self.bm2_manager.project_name))
+        board_record_process(data_ary, current_round, self.bm2_manager.config.start_board_number, self.bm2_manager.config.end_board_number, self.bm2_manager.config.board_count, get_project_folder(self.bm2_manager.project_name))
 
+#        total_score = []
+#        for team in range(self.bm2_manager.config.team_count):
+#            score = [team+1, 0.0]
+#            for rnd_score in self.bm2_manager.config.scheduler_metadata["round_score"]:
+#                for t, s in rnd_score:
+#                    if t == score[0]:
+#                        score[1] = score[1] + s
+#            total_score.append(score)
+#        self.bm2_manager.scheduler.set_score(total_score)
+#        self.bm2_manager.scheduler.round_score = self.bm2_manager.config.scheduler_metadata["round_score"]
+
+        # generate final score
+        generate_final_score(self.bm2_manager.scheduler.match, self.bm2_manager.config.team_count, current_round, self.bm2_manager.scheduler.score, self.bm2_manager.scheduler.round_score, self.bm2_manager.config.adjustment, get_project_folder(self.bm2_manager.project_name) + "/Total_Score.pdf")
+        
         self.bm2_manager.end_and_save_config()
         
         self.reload_project()
@@ -260,9 +275,16 @@ class ProjectStatusPanel(wx.Panel):
         self.st_starting_board_number = wx.StaticText(self, label='Starting Board')
         vbox.Add(self.st_starting_board_number, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP)
 
+        self.st_ending_board_number = wx.StaticText(self, label='Starting Board')
+        vbox.Add(self.st_ending_board_number, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP)
+
         self.btn_edit_starting_board_number = wx.Button(self, label='Edit Starting Board', size=(70, 30))
         vbox.Add(self.btn_edit_starting_board_number, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP)
         self.Bind(wx.EVT_BUTTON, self.on_edit_starting_board_number, self.btn_edit_starting_board_number)
+
+        self.btn_edit_ending_board_number = wx.Button(self, label='Edit Ending Board', size=(70, 30))
+        vbox.Add(self.btn_edit_ending_board_number, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP)
+        self.Bind(wx.EVT_BUTTON, self.on_edit_ending_board_number, self.btn_edit_ending_board_number)
 
         self.btn_score_detail = wx.Button(self, label='Score', size=(70, 30))
         vbox.Add(self.btn_score_detail, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP)
@@ -285,6 +307,7 @@ class ProjectStatusPanel(wx.Panel):
         project_name = project_config.project_name
         team_count = project_config.team_count
         start_board_number = project_config.start_board_number
+        end_board_number = project_config.end_board_number
         
         project_scheduler = project_config.get_scheduler()
         current_round = project_scheduler.get_current_round()
@@ -294,6 +317,7 @@ class ProjectStatusPanel(wx.Panel):
         self.st_team_count.SetLabel('Team Count: %d' % team_count)
         self.st_complete_round.SetLabel('Complete Round: %d' % current_round)
         self.st_starting_board_number.SetLabel('Starting Board: %d' % start_board_number)
+        self.st_ending_board_number.SetLabel('Ending Board: %d' % end_board_number)
         
         if is_next_round_available:
             self.btn_schedule_next_round.Enable()
@@ -314,6 +338,16 @@ class ProjectStatusPanel(wx.Panel):
             self.config.start_board_number = value
             self.refresh_ui()
         dialog.Destroy()
+
+    def on_edit_ending_board_number(self, e):
+        dialog = wx.NumberEntryDialog(parent=self, message='Enter ending board number', prompt='', caption='', value=self.config.end_board_number, min=1, max=1000)
+        res = dialog.ShowModal()
+        if res == wx.ID_OK:
+            value = int(dialog.GetValue())
+            self.config.end_board_number = value
+            self.refresh_ui()
+        dialog.Destroy()
+    
 
     def on_score_detail(self, e):
         #self.config.scheduler_metadata = self.scheduler.get_metadata()
@@ -624,7 +658,8 @@ class NewProjectRoundRobinDialog(wx.Dialog):
                     "current_round": 0
                 }, 
                 adjustment =[ [x+1, 0.0] for x in range(v["team_count"]) ],
-                start_board_number=1, 
+                start_board_number=1,
+                end_board_number=start_board_number+board_count-1, 
                 section_id=1, 
                 section_letter='A'
             )
@@ -767,7 +802,8 @@ class NewProjectSWISSDialog(wx.Dialog):
                     "current_round": 0
                 }, 
                 adjustment =[ [x+1, 0.0] for x in range(v["team_count"]) ],
-                start_board_number=1, 
+                start_board_number=1,
+                end_board_number=v["board_count"], 
                 section_id=1, 
                 section_letter='A'
             )

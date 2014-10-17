@@ -28,8 +28,8 @@ class BM2Manager(object):
         self.scheduler = self.config.get_scheduler()
         self.bcs = None
 
-    def setup_config(self, tm_name, team_count, board_count, scheduler_type, scheduler_metadata, adjustment, start_board_number, section_id, section_letter):
-        self.config.setup(tm_name, team_count, board_count, scheduler_type, scheduler_metadata, adjustment, start_board_number, section_id, section_letter)
+    def setup_config(self, tm_name, team_count, board_count, scheduler_type, scheduler_metadata, adjustment, start_board_number, end_board_number, section_id, section_letter):
+        self.config.setup(tm_name, team_count, board_count, scheduler_type, scheduler_metadata, adjustment, start_board_number, end_board_number, section_id, section_letter)
         self.scheduler = self.config.get_scheduler()
 
     def schedule_next_round(self):
